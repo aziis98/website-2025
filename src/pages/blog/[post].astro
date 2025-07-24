@@ -1,0 +1,29 @@
+---
+import Base from '@/layout/Base.astro'
+import type { GetStaticPaths } from 'astro'
+import { render } from 'astro:content'
+import { getCollection } from 'astro:content'
+export const getStaticPaths = (async () => {
+    const posts = await getCollection('blog')
+
+    console.log(`Found ${posts.length} blog posts:`)
+    posts.forEach(post => {
+        console.log(`- ${post.id}`)
+    })
+
+    return posts.map(post => ({
+        params: { post: post.id },
+        props: { post },
+    }))
+}) satisfies GetStaticPaths
+
+const { post } = Astro.props
+const { Content } = await render(post)
+---
+
+<Base>
+    <h1 slot="header-title">{post.data.title}</h1>
+    <main class="content">
+        <Content />
+    </main>
+</Base>

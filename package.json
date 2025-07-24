@@ -1,14 +1,28 @@
 {
-  "name": "website-2025-07-22",
-  "type": "module",
-  "version": "0.0.1",
-  "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
-  },
-  "dependencies": {
-    "astro": "^5.12.1"
-  }
+    "name": "website-2025-07-22",
+    "type": "module",
+    "version": "0.0.1",
+    "scripts": {
+        "dev": "astro dev",
+        "build": "astro build",
+        "preview": "astro preview",
+        "astro": "astro"
+    },
+    "dependencies": {
+        "@astrojs/check": "^0.9.4",
+        "@astrojs/preact": "^4.1.0",
+        "@fontsource-variable/inter": "^5.2.6",
+        "@fontsource-variable/jetbrains-mono": "^5.2.6",
+        "@fontsource-variable/outfit": "^5.2.6",
+        "@fontsource-variable/source-code-pro": "^5.2.6",
+        "@fontsource/iosevka": "^5.2.5",
+        "astro": "^5.12.1",
+        "astro-icon": "^1.1.5",
+        "preact": "^10.26.9",
+        "typescript": "^5.8.3"
+    },
+    "devDependencies": {
+        "prettier": "^3.6.2",
+        "prettier-plugin-astro": "^0.14.1"
+    }
 }

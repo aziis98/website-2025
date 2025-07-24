@@ -1,0 +1,64 @@
+---
+import '@fontsource-variable/inter'
+import '@fontsource-variable/outfit'
+
+import '@fontsource/iosevka'
+
+import '@/main.css'
+import { PixelartPlantRect } from '@/components/preact/plant-pixelart'
+
+type Props = {
+    title?: string | string[]
+}
+
+const { title } = Astro.props
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <title>{['aziis98', title ?? []].flat().reverse().join(' | ')}</title>
+    </head>
+    <body>
+        <header>
+            <!-- Header Art -->
+            <PixelartPlantRect client:visible options={{ cellColor: '#88888808', spawnLocation: 'top' }} />
+
+            <div class="logo">aziis98</div>
+
+            <div class="header-title">
+                <slot name="header-title" />
+            </div>
+        </header>
+
+        <nav class="sidebar">
+            <PixelartPlantRect
+                client:load
+                updateInterval={5}
+                stopTimeout={5000}
+                width={35}
+                height={25 * 10}
+                options={{ cellColor: 'hsl(266, 100%, 70%)', spawnLocation: 'bottom' }}
+            />
+
+            <div class="nav-item">Projects</div>
+            <div class="nav-item">Blog</div>
+            <div class="nav-item">Art</div>
+            <div class="nav-item">About</div>
+
+            <PixelartPlantRect
+                client:load
+                updateInterval={5}
+                stopTimeout={5000}
+                width={35}
+                height={25 * 10}
+                options={{ cellColor: 'hsl(266, 100%, 70%)', spawnLocation: 'top' }}
+            />
+        </nav>
+
+        <slot />
+    </body>
+</html>
