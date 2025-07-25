@@ -296,7 +296,7 @@ const createPixelartAutomata = (initialSprouts: Sprout[], grid: Grid<'filled'>, 
 type PixelartOptions = {
     cellSize?: number
     cellColor?: string
-    spawnLocation?: 'everywhere' | 'right' | 'top' | 'bottom' | 'left'
+    spawnLocation?: 'everywhere' | 'center' | 'right' | 'top' | 'bottom' | 'left'
 }
 
 const renderPixelart = (
@@ -307,7 +307,7 @@ const renderPixelart = (
 ) => {
     cellSize ??= 5
     cellColor ??= '#dddddd06'
-    spawnLocation ??= 'everywhere'
+    spawnLocation ??= 'center'
 
     console.log('Rendering pixel art plant...')
     // ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
@@ -316,7 +316,8 @@ const renderPixelart = (
     const gridWidth = Math.floor(ctx.canvas.width / cellSize)
     const gridHeight = Math.floor(ctx.canvas.height / cellSize)
 
-    const SIDE_SIZE = 0.25
+    const SIDE_SIZE = 0.0
+    const CENTER_SIZE = 0.25
 
     const sproutDensity = 0.005
     const maxSprouts = Math.floor(Math.max(1, gridWidth * gridHeight * sproutDensity))
@@ -326,14 +327,18 @@ const renderPixelart = (
                 ? Math.floor(randomFloat(0, gridWidth * SIDE_SIZE))
                 : spawnLocation === 'right'
                   ? Math.floor(randomFloat(gridWidth * (1.0 - SIDE_SIZE), gridWidth))
-                  : Math.floor(randomFloat(0, gridWidth))
+                  : spawnLocation === 'center'
+                    ? Math.floor(randomFloat(gridWidth * CENTER_SIZE, gridWidth * (1.0 - CENTER_SIZE)))
+                    : Math.floor(randomFloat(0, gridWidth))
 
         const y =
             spawnLocation === 'top'
                 ? Math.floor(randomFloat(0, gridHeight * SIDE_SIZE))
                 : spawnLocation === 'bottom'
                   ? Math.floor(randomFloat(gridHeight * (1.0 - SIDE_SIZE), gridHeight))
-                  : Math.floor(randomFloat(0, gridHeight))
+                  : spawnLocation === 'center'
+                    ? Math.floor(randomFloat(gridHeight * CENTER_SIZE, gridHeight * (1.0 - CENTER_SIZE)))
+                    : Math.floor(randomFloat(0, gridHeight))
 
         initialSprouts.push({
             x: roundTo(x, 2),
@@ -400,7 +405,7 @@ export const PixelartPlantRect = ({
 
     options ??= {
         cellSize: 5,
-        cellColor: '#aaaaaa06',
+        cellColor: '#dddddd06',
     }
 
     const actualWidth: Size = width !== undefined ? { abs: width } : { rel: 100 }
@@ -447,6 +452,7 @@ export const PixelartPlantRect = ({
     return (
         <div
             class="pixelart-plant-art"
+            title="Click to regenerate"
             style={{
                 minWidth: 0,
                 minHeight: 0,

@@ -340,10 +340,10 @@ $$
 \includegraphics[height=2em]{/blog/kauffman-polynomial/skein_h.png} &
 \includegraphics[height=2em]{/blog/kauffman-polynomial/skein_v.png} \\
 K & S_i K & E_i K & e_i K \\
-\footnotesize original &
-\footnotesize switch &
-\footnotesize h-splice &
-\footnotesize v-splice
+\text{\footnotesize original} &
+\text{\footnotesize switch} &
+\text{\footnotesize h-splice} &
+\text{\footnotesize v-splice}
 \end{array}
 $$
 
@@ -905,10 +905,10 @@ optimizations.
     optimizations lattice: the number of total recursive calls for the function
     `kauffman_polynomial` is in blue and time of execution in green.
 
-                          <figure>
-                          <img src="/blog/kauffman-polynomial/optimizations-lattice-calls.jpg" alt="Optimizations Lattice Calls">
-                          <figcaption>Optimizations Lattice Calls</figcaption>
-                          </figure>
+                  <figure>
+                  <img src="/blog/kauffman-polynomial/optimizations-lattice-calls.jpg" alt="Optimizations Lattice Calls">
+                  <figcaption>Optimizations Lattice Calls</figcaption>
+                  </figure>
 
     As we can see the most important optimization is the `to_minimal` one that
     by itself reduces the total number of calls from 29K to 8K but relabelling
@@ -953,9 +953,9 @@ results:
 
 ### The knot $10_{125}$
 
-<div style="display: flex; justify-content: center; gap: 1rem; margin: 1rem 0;">
+<div style="display: grid; grid-template-columns: auto auto; place-content: center; gap: 1rem; margin: 1rem 0;">
   <img src="/blog/kauffman-polynomial/10_125-crop.png" alt="Knot 10_125">
-  <img src="/blog/kauffman-polynomial/10_125-crop.png" alt="Knot 10_125 Mirrored" style=" transform: scaleX(-1);">
+  <img src="/blog/kauffman-polynomial/10_125-crop.png" alt="Knot 10_125 Mirrored" style="transform: scaleX(-1);">
 </div>
 
 This knot is _chiral_ meaning that it is not equivalent to its mirror. Our

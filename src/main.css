@@ -61,6 +61,8 @@
         color: var(--text-fg, #333);
         font-family: var(--font-base);
 
+        background: #303030;
+
         font-size: 18px;
         line-height: 1.75;
 
@@ -185,7 +187,7 @@
     pre,
     code {
         font-family: var(--font-monospace);
-        line-height: 1.25;
+        line-height: 1;
 
         font-size: 0.8em;
     }
@@ -261,12 +263,11 @@
         display: block;
 
         margin: 1rem auto;
-        width: auto;
-        height: auto;
 
-        /* max-width: calc(100% - 2rem); */
-
-        max-height: 30vh;
+        width: 100%;
+        max-width: calc(100% - 2rem);
+        max-height: 35vh;
+        object-fit: contain;
 
         /* border-radius: 2px;
         border: 2px solid #ddd;
@@ -308,6 +309,12 @@
         grid-template-columns: 1fr minmax(auto, 80ch) 1fr;
         grid-template-rows: auto auto;
 
+        --main-gap: 1.5rem;
+
+        @media screen and (width <= 960px) {
+            --main-gap: 1rem;
+        }
+
         &:has(.content.wide) {
             grid-template-columns: auto 1fr;
 
@@ -327,10 +334,8 @@
 
             grid-auto-flow: dense;
 
-            padding: 0 1rem 1.5rem 1rem;
+            padding: 0 1rem var(--main-gap) 1rem;
             background: #333;
-
-            box-shadow: 0 0 0.5rem #0003;
 
             position: relative;
 
@@ -340,8 +345,18 @@
                 top: 0;
                 left: 0;
                 right: 0;
-                height: 1rem;
-                background: linear-gradient(to bottom, #222, transparent);
+                height: 15px;
+                background: linear-gradient(to bottom, #303030, transparent);
+            }
+
+            &::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 0.5rem;
+                background: linear-gradient(to top, #0003, transparent);
             }
 
             > * > .pixelart-plant-art {
@@ -352,7 +367,7 @@
             }
 
             > .logo {
-                padding-right: 1rem;
+                padding-right: var(--main-gap);
 
                 text-decoration: none;
 
@@ -373,8 +388,6 @@
             }
 
             > .header-title {
-                padding-left: 1rem;
-
                 display: grid;
                 place-content: end start;
                 grid-column: 2 / 4;
@@ -395,19 +408,22 @@
 
             grid-column: 1 / -1;
 
+            background: #fff;
+
             > .sidebar {
-                padding: 1.5rem 1rem;
+                /* the + 0.25rem is a correction to match the text-top line of the art and the text */
+                padding: calc(var(--main-gap) + 0.25rem) var(--main-gap) 0 0;
 
                 justify-self: end;
             }
 
             > .content {
                 grid-column: 2 / 3;
-                padding: 1.15rem 1rem 6rem;
+                padding: 1.15rem 0 6rem;
                 min-width: 0;
 
                 &.wide {
-                    padding-right: 1.5rem;
+                    padding-right: var(--main-gap);
                 }
 
                 @media screen and (width <= 600px) {
@@ -419,8 +435,8 @@
             }
         }
 
-        @media screen and (width <= 1250px) {
-            grid-template-columns: auto auto;
+        @media screen and (width <= 960px) {
+            grid-template-columns: auto 70ch;
 
             > header {
                 > .header-title {
@@ -473,7 +489,7 @@
 
     nav {
         position: sticky;
-        top: 0;
+        top: -0.25rem;
 
         width: 15rem;
 
@@ -499,6 +515,8 @@
 
             height: 2rem;
             padding: 0 0.75rem;
+
+            margin-right: 0.25rem;
 
             display: grid;
             align-content: center;
@@ -559,12 +577,8 @@
 
     .blog-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(18rem, 22rem));
+        grid-template-columns: repeat(auto-fill, minmax(20rem, auto));
         gap: 1rem;
-
-        /* @media screen and (width <= 600px) { */
-        /* gap: 0.5rem; */
-        /* } */
 
         .blog-item {
             padding: 0.5rem;
@@ -576,16 +590,16 @@
             font-size: 13pt;
             line-height: 1.5;
 
-            color: #fff;
-            background: #333;
+            color: #ddd;
+            background: #444;
 
             border-radius: 3px;
-            border: 4px solid #333;
+            border: 4px solid #444;
 
             cursor: pointer;
 
             > .title {
-                color: hsl(from var(--accent) h s 85%);
+                color: hsl(from var(--accent) h 80% 80%);
 
                 font-size: calc(var(--heading-base-size) * pow(var(--heading-scale-factor), 1));
                 line-height: 1.25;

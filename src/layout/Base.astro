@@ -67,7 +67,13 @@ const { title } = Astro.props
     <body>
         <header>
             <!-- Header Art -->
-            <PixelartPlantRect client:visible options={{ cellColor: '#88888808', spawnLocation: 'top' }} />
+            <PixelartPlantRect
+                client:visible
+                options={{
+                    cellColor: '#88888806',
+                    spawnLocation: 'top',
+                }}
+            />
 
             <a class="logo" href="/">aziis98</a>
 
@@ -86,11 +92,13 @@ const { title } = Astro.props
                     options={{ cellColor: 'hsl(266, 100%, 70%)', spawnLocation: 'bottom' }}
                 />
 
-                <a class="nav-item" href="/projects">Projects</a>
+                <a class="nav-item" href="/">Home</a>
 
                 <a class="nav-item" href="/blog">Blog</a>
 
                 <a class="nav-item" href="/art">Art</a>
+
+                <a class="nav-item" href="/projects">Projects</a>
 
                 <a class="nav-item" href="/about">About</a>
 
