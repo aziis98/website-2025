@@ -6,7 +6,7 @@
 
     --text-fg: #222;
 
-    --font-monospace: 'Iosevka';
+    --font-monospace: 'JetBrains Mono Variable';
     --font-title: 'Outfit Variable';
     --font-base: 'Inter Variable';
 
@@ -38,15 +38,17 @@
             -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Inter', 'Open Sans',
             'Helvetica Neue', sans-serif;
     }
+
+    /* text selection */
+    ::selection {
+        background: #0003;
+    }
 }
 
 @layer typography {
     body {
         color: var(--text-fg, #333);
-
         font-family: var(--font-base);
-        text-align: justify;
-        hyphens: auto;
     }
 
     h1,
@@ -115,6 +117,14 @@
     ul,
     ol {
         padding-left: 1.5rem;
+
+        line-height: 1.5;
+
+        li {
+            p {
+                margin: 0.5rem 0;
+            }
+        }
     }
 
     ol {
@@ -135,59 +145,94 @@
         }
     }
 
-    main {
+    a {
+        color: hsl(from var(--accent) h s 65%);
+        text-decoration: none;
+
+        &:hover {
+            color: hsl(from var(--accent) h s 50%);
+            text-decoration: underline solid hsl(from var(--accent) h s 60%) 2px;
+        }
+    }
+
+    pre,
+    code {
+        font-family: var(--font-monospace);
+        line-height: 1.25;
+
+        font-size: 12pt;
+    }
+
+    .katex {
+        font-size: 15pt !important;
+    }
+
+    pre:not(:has(.katex)) {
+        margin: 1rem auto;
+        min-width: 25rem;
+        width: fit-content;
+        max-width: calc(100% - 2rem);
+        overflow-x: auto;
+
+        padding: 0.5rem;
+
+        border-radius: 2px;
+        border: 2px solid #ddd;
+        box-shadow: 0 0 0.5rem #0001;
+    }
+
+    pre:has(.katex) {
+        /* width: fit-content; */
+        max-width: calc(100% - 2rem);
+        overflow-x: auto;
+        margin: 0 auto;
+    }
+
+    img,
+    p > img {
+        display: block;
+
+        margin: 1rem auto;
+        max-width: calc(100% - 2rem);
+        max-height: 50vh;
+
+        /* border-radius: 2px;
+        border: 2px solid #ddd;
+        box-shadow: 0 0 0.5rem #0001; */
+    }
+
+    hr {
+        margin: 2rem;
+        width: calc(100% - 4rem);
+        height: 4px;
+        background: hsl(266, 100%, 70%);
+        border: none;
+    }
+
+    /* main {
         .pixelart-plant-art {
             max-width: calc(100% - 6rem);
             max-height: 3rem;
             margin: 3rem;
         }
-    }
+    } */
 }
 
 @layer components {
     body {
         display: grid;
 
-        position: relative;
-
-        grid-template-columns: 1fr minmax(auto, 52rem) 1fr;
+        grid-template-columns: 1fr minmax(auto, 80ch) 1fr;
         grid-template-rows: auto auto;
 
-        grid-template-areas:
-            'title    content-title content-title'
-            'sidebar  content .';
-
-        --art-height: calc(5px * 30);
-
-        > * > .pixelart-plant-art {
-            /* pointer-events: none; */
-
-            grid-column: 1 / 4;
-            grid-row: 1 / 2;
-
-            padding: 0.5rem 0.5rem 0 0.5rem;
-
-            max-height: var(--art-height);
-
-            z-index: 10;
-            position: relative;
-
-            &::after {
-                position: absolute;
-
-                content: '';
-                inset: 0 0 auto 0;
-                height: calc(var(--art-height) / 2);
-
-                background: linear-gradient(to bottom, #333, transparent);
-            }
+        &:has(.content.wide) {
+            grid-template-columns: auto 1fr;
         }
 
         > header {
             display: grid;
 
-            grid-column: span 3;
-
+            grid-column: 1 / -1;
             grid-template-columns: subgrid;
             grid-template-rows: auto auto;
 
@@ -195,8 +240,22 @@
 
             grid-auto-flow: dense;
 
-            padding: 0 1rem 1rem 1rem;
+            padding: 0 1rem 1.5rem 1rem;
             background: #333;
+
+            box-shadow: 0 0 0.5rem #0003;
+
+            position: relative;
+
+            &::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 1rem;
+                background: linear-gradient(to bottom, #222, transparent);
+            }
 
             > * > .pixelart-plant-art {
                 display: grid;
@@ -211,8 +270,8 @@
                 display: grid;
                 place-content: end end;
 
-                font-family: var(--font-monospace);
-                font-size: 28pt;
+                font-family: 'Iosevka';
+                font-size: 32pt;
                 font-weight: 600;
                 line-height: 1;
 
@@ -236,76 +295,48 @@
 
                 > h1 {
                     line-height: 1;
+                    text-wrap: balance;
                 }
             }
         }
 
-        /* > .title,
-        > .content-title {
-            padding: 1rem;
-            background: #333;
-
-            position: relative;
-
-            &::after {
-                content: '';
-                position: absolute;
-
-                left: 0;
-                right: 0;
-                top: 100%;
-                height: 0.5rem;
-
-                background: linear-gradient(to bottom, #0002, transparent);
-            }
-        } */
-
-        /* > .title {
-            grid-area: title;
-
+        > main {
             display: grid;
-            place-content: end end;
+            grid-template-columns: subgrid;
 
-            font-family: var(--font-monospace);
-            font-size: 28pt;
-            font-weight: 600;
-            line-height: 1;
+            grid-column: 1 / -1;
 
-            color: #fff;
+            > .sidebar {
+                padding: 1.5rem 1rem;
 
-            > .logo {
-                display: grid;
-                color: #fff;
+                justify-self: end;
+            }
+
+            > .content {
+                grid-column: 2 / 3;
+                padding: 1.15rem 1rem 2rem;
+                min-width: 0;
+
+                &.wide {
+                    padding-right: 2rem;
+                }
             }
         }
 
-        > .content-title {
-            grid-area: content-title;
+        @media screen and (width <= 1250px) {
+            grid-template-columns: auto auto;
 
-            display: grid;
-            place-content: end start;
-
-            color: hsl(from var(--accent) h s 95%);
-
-            position: relative;
-
-            padding-top: calc(var(--art-height) + 0.5rem);
-
-            > h1 {
-                line-height: 1;
+            > header {
+                > .header-title {
+                    grid-column: 2 / 3;
+                }
             }
-        } */
 
-        > .sidebar {
-            grid-area: sidebar;
-
-            padding: 1rem;
-        }
-
-        > .content {
-            grid-area: content;
-
-            padding: 1rem;
+            > main {
+                > .sidebar {
+                    width: auto;
+                }
+            }
         }
     }
 
@@ -334,6 +365,8 @@
             cursor: pointer;
 
             color: hsl(from var(--accent) h s 65%);
+
+            text-decoration: none;
 
             height: 2rem;
             padding: 0 0.75rem;
@@ -368,6 +401,50 @@
         padding: 0.5rem;
 
         min-height: 4rem;
+    }
+
+    .blog-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+        gap: 1rem;
+
+        .blog-item {
+            padding: 0.5rem;
+
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 0.5rem;
+
+            font-size: 13pt;
+            line-height: 1.5;
+
+            color: #fff;
+            background: #333;
+
+            border-radius: 2px;
+            border: 4px solid #333;
+
+            cursor: pointer;
+
+            > .title a {
+                color: hsl(from var(--accent) h s 85%);
+
+                text-decoration: none;
+
+                font-size: 22pt;
+                font-weight: 500;
+                line-height: 22pt;
+            }
+
+            &:hover {
+                > .title a {
+                    color: hsl(from var(--accent) h s 65%);
+                }
+
+                background: #fff;
+                color: #333;
+            }
+        }
     }
 }
 

@@ -5,13 +5,9 @@ description: Questo articolo è la versione in forma scritta del talk con lo ste
 tags: ['go', 'generics', 'devfest', 'gdg', 'talk', 'lang-it']
 publish_date: 2023/04/17
 thumbnail: '/data/thumbnails/talk-go-intro-generics-2.jpeg'
+thumbnail_alt: 'line pen drawing conference blackboard'
+thumbnail_url: 'https://www.bing.com/images/create/line-pen-drawing2c-conference2c-audience2c-guy-on-sta/64407c9b5d4a49738ea520dee5625893?id=yzt9HmaNZY3uiy8ZVdmdpA%3d%3d&view=detailv2&idpp=genimg&FORM=GCRIDP&mode=overlay'
 ---
-
-# Introduzione alle Generics in Go
-
-<a href="https://www.bing.com/images/create/line-pen-drawing2c-conference2c-audience2c-guy-on-sta/64407c9b5d4a49738ea520dee5625893?id=yzt9HmaNZY3uiy8ZVdmdpA%3d%3d&view=detailv2&idpp=genimg&FORM=GCRIDP&mode=overlay">
-    <img src="../../data/thumbnails/talk-go-intro-generics-2.jpeg" alt="line pen drawing conference blackboard">
-</a>
 
 Questo articolo è tratto da un talk tenuto alla DevFest di Pisa del 1 Aprile 2023 organizzata dal
 GDG. Le slide originali e tutto il codice derivato da questo talk si trovano

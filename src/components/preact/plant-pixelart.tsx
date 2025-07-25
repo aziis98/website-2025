@@ -412,7 +412,14 @@ export const PixelartPlantRect = ({
 
     // redraw on window resize
     useEffect(() => {
-        const handleResize = () => setRedraw(v => v + 1)
+        let lastWidth = window.innerWidth
+
+        const handleResize = () => {
+            if (window.innerWidth !== lastWidth) {
+                lastWidth = window.innerWidth
+                setRedraw(v => v + 1)
+            }
+        }
 
         window.addEventListener('resize', handleResize)
         return () => window.removeEventListener('resize', handleResize)

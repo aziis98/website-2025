@@ -1,0 +1,29 @@
+---
+import Base from '@/layout/Base.astro'
+import { getCollection } from 'astro:content'
+
+const posts = await getCollection('blog')
+---
+
+<Base>
+    <h1 slot="header-title">Blog</h1>
+    <div class="content wide">
+        <div class="blog-grid">
+            {
+                posts
+
+                    .filter(post => !post.data.draft)
+                    // sort by .data.publish_date that is in format "YYYY/MM/DD"
+                    .sort((a, b) => new Date(b.data.publish_date).getTime() - new Date(a.data.publish_date).getTime())
+                    .map(post => (
+                        <div class="blog-item">
+                            <div class="title">
+                                <a href={`/blog/${post.id}`}>{post.data.title}</a>
+                            </div>
+                            <div class="description">{post.data.description}</div>
+                        </div>
+                    ))
+            }
+        </div>
+    </div>
+</Base>

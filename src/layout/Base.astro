@@ -1,8 +1,11 @@
 ---
 import '@fontsource-variable/inter'
 import '@fontsource-variable/outfit'
+import '@fontsource-variable/jetbrains-mono'
 
 import '@fontsource/iosevka'
+
+import 'katex/dist/katex.min.css'
 
 import '@/main.css'
 import { PixelartPlantRect } from '@/components/preact/plant-pixelart'
@@ -20,6 +23,43 @@ const { title } = Astro.props
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+        <script>
+            // @ts-nocheck
+            // This import "katex" only on the client side, on the user's browser.
+            import katex from 'katex'
+
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('.math-inline').forEach($e => {
+                    const $s = document.createElement('span')
+                    $e.parentElement.insertBefore($s, $e)
+
+                    katex.render($e.textContent, $e, {
+                        throwOnError: false,
+                        displayMode: false,
+                    })
+
+                    $s.appendChild($e.firstChild)
+                    $e.remove()
+                })
+
+                document.querySelectorAll('.math-display').forEach($e => {
+                    const $p = document.createElement('p')
+                    const $s = document.createElement('span')
+                    $p.appendChild($s)
+
+                    $e.parentElement.insertBefore($p, $e)
+
+                    katex.render($e.textContent, $e, {
+                        throwOnError: false,
+                        displayMode: true,
+                    })
+
+                    $s.appendChild($e.firstChild)
+                    $e.remove()
+                })
+            })
+        </script>
+
         <title>{['aziis98', title ?? []].flat().reverse().join(' | ')}</title>
     </head>
     <body>
@@ -33,32 +73,36 @@ const { title } = Astro.props
                 <slot name="header-title" />
             </div>
         </header>
+        <main>
+            <nav class="sidebar">
+                <PixelartPlantRect
+                    client:load
+                    updateInterval={5}
+                    stopTimeout={5000}
+                    width={35}
+                    height={25 * 10}
+                    options={{ cellColor: 'hsl(266, 100%, 70%)', spawnLocation: 'bottom' }}
+                />
 
-        <nav class="sidebar">
-            <PixelartPlantRect
-                client:load
-                updateInterval={5}
-                stopTimeout={5000}
-                width={35}
-                height={25 * 10}
-                options={{ cellColor: 'hsl(266, 100%, 70%)', spawnLocation: 'bottom' }}
-            />
+                <a class="nav-item" href="/projects">Projects</a>
 
-            <div class="nav-item">Projects</div>
-            <div class="nav-item">Blog</div>
-            <div class="nav-item">Art</div>
-            <div class="nav-item">About</div>
+                <a class="nav-item" href="/blog">Blog</a>
 
-            <PixelartPlantRect
-                client:load
-                updateInterval={5}
-                stopTimeout={5000}
-                width={35}
-                height={25 * 10}
-                options={{ cellColor: 'hsl(266, 100%, 70%)', spawnLocation: 'top' }}
-            />
-        </nav>
+                <a class="nav-item" href="/art">Art</a>
 
-        <slot />
+                <a class="nav-item" href="/about">About</a>
+
+                <PixelartPlantRect
+                    client:load
+                    updateInterval={5}
+                    stopTimeout={5000}
+                    width={35}
+                    height={25 * 10}
+                    options={{ cellColor: 'hsl(266, 100%, 70%)', spawnLocation: 'top' }}
+                />
+            </nav>
+
+            <slot />
+        </main>
     </body>
 </html>
