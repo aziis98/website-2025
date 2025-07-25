@@ -16,8 +16,6 @@ project's source code is available on my GitHub
 
 ---
 
-# Introduction
-
 ## The Kauffman Polynomial
 
 The Kauffman polynomial $L$ is a two-variable polynomial invariant of regular
@@ -33,24 +31,24 @@ diagram $K$ we have $L_K(a,z) \in \mathbb{Z}[a, a^{-1}, z, z^{-1}]$ and:
 2.  We have the following identities:
 
     $$
-    L(\includegraphics[height=1em]{/articles/kauffman-polynomial/skein_over.png}) +
-    L(\includegraphics[height=1em]{/articles/kauffman-polynomial/skein_under.png}) = z
-    (L(\includegraphics[height=1em]{/articles/kauffman-polynomial/skein_h.png}) +
-    L(\includegraphics[height=1em]{/articles/kauffman-polynomial/skein_v.png}))
+    L(\includegraphics[height=1em]{/blog/kauffman-polynomial/skein_over.png}) +
+    L(\includegraphics[height=1em]{/blog/kauffman-polynomial/skein_under.png}) = z
+    (L(\includegraphics[height=1em]{/blog/kauffman-polynomial/skein_h.png}) +
+    L(\includegraphics[height=1em]{/blog/kauffman-polynomial/skein_v.png}))
     $$
 
     $$
-    L(\includegraphics[height=1em]{/articles/kauffman-polynomial/skein_unit.png}) = 1
+    L(\includegraphics[height=1em]{/blog/kauffman-polynomial/skein_unit.png}) = 1
     $$
 
     $$
-    L(\includegraphics[height=1em]{/articles/kauffman-polynomial/skein_over_twist.png}) = a
-    L(\includegraphics[height=1em]{/articles/kauffman-polynomial/skein_strand.png})
+    L(\includegraphics[height=1em]{/blog/kauffman-polynomial/skein_over_twist.png}) = a
+    L(\includegraphics[height=1em]{/blog/kauffman-polynomial/skein_strand.png})
     $$
 
     $$
-    L(\includegraphics[height=1em]{/articles/kauffman-polynomial/skein_under_twist.png}) = a^{-1}
-    L(\includegraphics[height=1em]{/articles/kauffman-polynomial/skein_strand.png})
+    L(\includegraphics[height=1em]{/blog/kauffman-polynomial/skein_under_twist.png}) = a^{-1}
+    L(\includegraphics[height=1em]{/blog/kauffman-polynomial/skein_strand.png})
     $$
 
 We will later be seeing that the Kauffman polynomial can be defined in a more
@@ -106,9 +104,9 @@ orientation. When we pass at a crossing that is an over-crossing for the current
 strand we write down a 4-tuple of counter-clockwise numbers for the arc incident
 to the crossing starting from the _entering under-crossing_ arc.
 
-<!-- ![PD Code Crossing Ordering](/articles/kauffman-polynomial/pd-code-crossing-ordering.svg) -->
+<!-- ![PD Code Crossing Ordering](/blog/kauffman-polynomial/pd-code-crossing-ordering.svg) -->
 <figure>
-  <img src="/articles/kauffman-polynomial/pd-code-crossing-ordering.svg" alt="PD Code Crossing Ordering">
+  <img src="/blog/kauffman-polynomial/pd-code-crossing-ordering.svg" alt="PD Code Crossing Ordering">
   <figcaption><em>PD Code Crossing Ordering</em></figcaption>
 </figure>
 
@@ -127,26 +125,26 @@ to the crossing starting from the _entering under-crossing_ arc.
 Let's see an example of how to construct the PD code for the following link
 diagram
 
-![PD Code Example Start](/articles/kauffman-polynomial/pd-code-0.svg)
+![PD Code Example Start](/blog/kauffman-polynomial/pd-code-0.svg)
 
 First let's choose a starting point for each component and label accordingly the
 arcs of the link. We will use the following convention:
 
 <figure>
-  <img src="/articles/kauffman-polynomial/pd-code-labelling.svg" alt="Oriented link with starting points and edge labels.">
+  <img src="/blog/kauffman-polynomial/pd-code-labelling.svg" alt="Oriented link with starting points and edge labels.">
   <figcaption><em>Oriented link with starting points and edge labels.</em></figcaption>
 </figure>
 
 Now we can start processing each component of the link by walking along it in
 its orientation and writing down the over-crossings we encounter.
 
-![PD Code Crossing 1](/articles/kauffman-polynomial/pd-code-crossing-1.svg)
+![PD Code Crossing 1](/blog/kauffman-polynomial/pd-code-crossing-1.svg)
 
-![PD Code Crossing 2](/articles/kauffman-polynomial/pd-code-crossing-2.svg)
+![PD Code Crossing 2](/blog/kauffman-polynomial/pd-code-crossing-2.svg)
 
-![PD Code Crossing 3](/articles/kauffman-polynomial/pd-code-crossing-3.svg)
+![PD Code Crossing 3](/blog/kauffman-polynomial/pd-code-crossing-3.svg)
 
-![PD Code Crossing 4](/articles/kauffman-polynomial/pd-code-crossing-4.svg)
+![PD Code Crossing 4](/blog/kauffman-polynomial/pd-code-crossing-4.svg)
 
 Every directed crossing appears only once as an over-crossing so this algorithm
 terminates when all crossings have been visited. So the final PD code for this
@@ -175,15 +173,15 @@ an over-crossing or under-crossing, the second sign (that can be added in a
 second pass over the loop) is given by the handedness of the crossing using the
 following convention:
 
-<!-- Assuming /articles/kauffman-polynomial/skein_generic_pp.png and /articles/kauffman-polynomial/skein_generic_pn.png are pre-rendered for these specific parameters. -->
+<!-- Assuming /blog/kauffman-polynomial/skein_generic_pp.png and /blog/kauffman-polynomial/skein_generic_pn.png are pre-rendered for these specific parameters. -->
 
 $$
 \varepsilon(
-    \includegraphics[height=1em]{/articles/kauffman-polynomial/skein_generic_pp.png}
+    \includegraphics[height=1em]{/blog/kauffman-polynomial/skein_generic_pp.png}
 ) = +1
 \qquad
 \varepsilon(
-    \includegraphics[height=1em]{/articles/kauffman-polynomial/skein_generic_pn.png}
+    \includegraphics[height=1em]{/blog/kauffman-polynomial/skein_generic_pn.png}
 )= -1
 $$
 
@@ -292,7 +290,7 @@ L.plot()
 ```
 
 <figure>
-    <img src="/articles/kauffman-polynomial/sage-monster-unknot.svg" alt="Sage Monster Unknot" style="width: 40%; min-width: 200px; display: block; margin: auto;" />
+    <img src="/blog/kauffman-polynomial/sage-monster-unknot.svg" alt="Sage Monster Unknot" style="width: 40%; min-width: 200px; display: block; margin: auto;" />
 </figure>
 
 Sage internally uses a
@@ -330,19 +328,22 @@ built by considering the planar shadow $U$ of $K$ and walking along $U$ starting
 from $p$ and making each crossing an over-crossing when passing on it the first
 time.
 
-![Standard Unknot Construction](/articles/kauffman-polynomial/standard-unknot-construction.jpg)
+![Standard Unknot Construction](/blog/kauffman-polynomial/standard-unknot-construction.jpg)
 
 **Definition.** Let's give a name to the following knot modifications for $K$
 near a specific crossing $i$:
 
 $$
 \begin{array}{cccc}
-\includegraphics[height=2em]{/articles/kauffman-polynomial/skein_over.png} &
-\includegraphics[height=2em]{/articles/kauffman-polynomial/skein_under.png} &
-\includegraphics[height=2em]{/articles/kauffman-polynomial/skein_h.png} &
-\includegraphics[height=2em]{/articles/kauffman-polynomial/skein_v.png} \\
+\includegraphics[height=2em]{/blog/kauffman-polynomial/skein_over.png} &
+\includegraphics[height=2em]{/blog/kauffman-polynomial/skein_under.png} &
+\includegraphics[height=2em]{/blog/kauffman-polynomial/skein_h.png} &
+\includegraphics[height=2em]{/blog/kauffman-polynomial/skein_v.png} \\
 K & S_i K & E_i K & e_i K \\
-\textit{\footnotesize original} & \textit{\footnotesize switch} & \textit{\footnotesize h-splice} & \textit{\footnotesize v-splice}
+\footnotesize original &
+\footnotesize switch &
+\footnotesize h-splice &
+\footnotesize v-splice
 \end{array}
 $$
 
@@ -429,16 +430,16 @@ following:
     cases based on the crossing over/under type and handedness that can be
     reduced to the following two cases
     $$
-    L(\includegraphics[height=1.2em]{/articles/kauffman-polynomial/skein_over.png}) = z
-    (L(\includegraphics[height=1.2em]{/articles/kauffman-polynomial/skein_h.png}) +
-    L(\includegraphics[height=1.2em]{/articles/kauffman-polynomial/skein_v.png})) -
-    L(\includegraphics[height=1.2em]{/articles/kauffman-polynomial/skein_under.png})
+    L(\includegraphics[height=1.2em]{/blog/kauffman-polynomial/skein_over.png}) = z
+    (L(\includegraphics[height=1.2em]{/blog/kauffman-polynomial/skein_h.png}) +
+    L(\includegraphics[height=1.2em]{/blog/kauffman-polynomial/skein_v.png})) -
+    L(\includegraphics[height=1.2em]{/blog/kauffman-polynomial/skein_under.png})
     $$
     $$
-    L(\includegraphics[height=1.2em]{/articles/kauffman-polynomial/skein_under.png}) = z
-    (L(\includegraphics[height=1.2em]{/articles/kauffman-polynomial/skein_h.png}) +
-    L(\includegraphics[height=1.2em]{/articles/kauffman-polynomial/skein_v.png})) -
-    L(\includegraphics[height=1.2em]{/articles/kauffman-polynomial/skein_over.png})
+    L(\includegraphics[height=1.2em]{/blog/kauffman-polynomial/skein_under.png}) = z
+    (L(\includegraphics[height=1.2em]{/blog/kauffman-polynomial/skein_h.png}) +
+    L(\includegraphics[height=1.2em]{/blog/kauffman-polynomial/skein_v.png})) -
+    L(\includegraphics[height=1.2em]{/blog/kauffman-polynomial/skein_over.png})
     $$
     actually due to the symmetry of the Kauffman polynomial we can just use the
     same rule for both cases, so we can write
@@ -548,7 +549,7 @@ Then we can walk along the shadow of each component in order and make each
 crossing an over-crossing when passing on it for the first time.
 
 <figure>
-  <img src="/articles/kauffman-polynomial/standard-unlink-construction.png" alt="Standard unknot construction for a link">
+  <img src="/blog/kauffman-polynomial/standard-unlink-construction.png" alt="Standard unknot construction for a link">
   <figcaption><em>Standard unknot construction for a link, in blue are highlighted all the crossings in the resulting switching sequence</em></figcaption>
 </figure>
 
@@ -579,7 +580,7 @@ Now we need to be careful when applying these switches as they do not preserve
 the writhe as we can see in the following figure
 
 <figure>
-  <img src="/articles/kauffman-polynomial/standard-unlink-signs-switches.png" alt="Switched crossing signs" width="80%">
+  <img src="/blog/kauffman-polynomial/standard-unlink-signs-switches.png" alt="Switched crossing signs" width="80%">
   <figcaption><em>Switched crossing signs after bringing the previous link to its standard unlink</em></figcaption>
 </figure>
 
@@ -656,7 +657,7 @@ diagram shows all the possible cases for horizontal splicing for _signed gauss
 codes_.
 
 <figure>
-  <img src="/articles/kauffman-polynomial/operations-splice-h-cases.png" alt="Cases for horizontal splicing"> 
+  <img src="/blog/kauffman-polynomial/operations-splice-h-cases.png" alt="Cases for horizontal splicing"> 
   <figcaption>Cases for horizontal splicing</figcaption>
 </figure>
 
@@ -713,7 +714,7 @@ list of crossings. We also need to correct all the signs of the crossings to
 account for the new orientation as shown below
 
 <figure id="fig:splice-signs-problem">
-  <img src="/articles/kauffman-polynomial/splice-signs-problem.png" alt="Crossing signs problem after splice" style="width:80%;">
+  <img src="/blog/kauffman-polynomial/splice-signs-problem.png" alt="Crossing signs problem after splice" style="width:80%;">
   <figcaption>Crossing signs problem after splice</figcaption>
 </figure>
 
@@ -755,7 +756,7 @@ that the output lists are the same as in the previous splice case just switched
 based on the crossing sign.
 
 <figure>
-  <img src="/articles/kauffman-polynomial/operations-splice-v-cases.png" alt="Cases for vertical splicing">
+  <img src="/blog/kauffman-polynomial/operations-splice-v-cases.png" alt="Cases for vertical splicing">
   <figcaption><em>Cases for vertical splicing</em></figcaption>
 </figure>
 
@@ -904,10 +905,10 @@ optimizations.
     optimizations lattice: the number of total recursive calls for the function
     `kauffman_polynomial` is in blue and time of execution in green.
 
-      <figure>
-      <img src="/articles/kauffman-polynomial/optimizations-lattice-calls.jpg" alt="Optimizations Lattice Calls">
-      <figcaption>Optimizations Lattice Calls</figcaption>
-      </figure>
+                          <figure>
+                          <img src="/blog/kauffman-polynomial/optimizations-lattice-calls.jpg" alt="Optimizations Lattice Calls">
+                          <figcaption>Optimizations Lattice Calls</figcaption>
+                          </figure>
 
     As we can see the most important optimization is the `to_minimal` one that
     by itself reduces the total number of calls from 29K to 8K but relabelling
@@ -952,9 +953,9 @@ results:
 
 ### The knot $10_{125}$
 
-<div style="display: flex; justify-content: center; margin: 1rem 0;">
-  <img src="/articles/kauffman-polynomial/10_125-crop.png" alt="Knot 10_125" style="height:5cm;">
-  <img src="/articles/kauffman-polynomial/10_125-crop.png" alt="Knot 10_125 Mirrored" style="height:5cm; transform: scaleX(-1);">
+<div style="display: flex; justify-content: center; gap: 1rem; margin: 1rem 0;">
+  <img src="/blog/kauffman-polynomial/10_125-crop.png" alt="Knot 10_125">
+  <img src="/blog/kauffman-polynomial/10_125-crop.png" alt="Knot 10_125 Mirrored" style=" transform: scaleX(-1);">
 </div>
 
 This knot is _chiral_ meaning that it is not equivalent to its mirror. Our
@@ -1009,11 +1010,11 @@ in the database). The results are shown in the following histograms: each bar
 counts the number of knots that took the amount of time in the relative bin.
 
 <figure style="padding: 0 2rem;">
-    <img src="/articles/kauffman-polynomial/histogram_knots_times.png" alt="Histogram of knots computation times" style="width: 25rem;">
+    <img src="/blog/kauffman-polynomial/histogram_knots_times.png" alt="Histogram of knots computation times" style="width: 25rem;">
     <figcaption style="font-size:9pt;">Histogram for knots times</figcaption>
 </figure>
 <figure style="padding: 0 2rem;">
-    <img src="/articles/kauffman-polynomial/histogram_links_times.png" alt="Histogram of links computation times" style="width: 25rem;">
+    <img src="/blog/kauffman-polynomial/histogram_links_times.png" alt="Histogram of links computation times" style="width: 25rem;">
     <figcaption style="font-size:9pt;">Histogram for links times</figcaption>
 </figure>
 

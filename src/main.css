@@ -10,8 +10,15 @@
     --font-title: 'Outfit Variable';
     --font-base: 'Inter Variable';
 
-    --heading-base-size: 14pt;
-    --heading-scale-factor: 1.61;
+    --heading-base-size: 18px;
+    --heading-scale-factor: 1.41;
+}
+
+@media screen and (width <= 600px) {
+    :root {
+        --heading-base-size: 16px;
+        --heading-scale-factor: 1.25;
+    }
 }
 
 @layer base {
@@ -21,6 +28,7 @@
         font-family: inherit;
         margin: 0;
         box-sizing: border-box;
+        text-decoration: none;
     }
 
     html,
@@ -29,14 +37,17 @@
         margin: 0;
 
         min-height: 100%;
+    }
 
-        font-size: 14pt;
-        line-height: 1.75;
-
-        /* os independent font stack */
-        font-family:
-            -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Inter', 'Open Sans',
-            'Helvetica Neue', sans-serif;
+    .content {
+        > * {
+            &:not(:first-child) {
+                margin-top: 1rem;
+            }
+            &:not(:last-child) {
+                margin-bottom: 1rem;
+            }
+        }
     }
 
     /* text selection */
@@ -49,6 +60,18 @@
     body {
         color: var(--text-fg, #333);
         font-family: var(--font-base);
+
+        font-size: 18px;
+        line-height: 1.75;
+
+        /* os independent font stack */
+        font-family:
+            -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Inter', 'Open Sans',
+            'Helvetica Neue', sans-serif;
+
+        @media screen and (width <= 600px) {
+            font-size: 16px;
+        }
     }
 
     h1,
@@ -57,7 +80,7 @@
     h4 {
         font-family: var(--font-title);
 
-        line-height: 1;
+        line-height: 1.125;
 
         margin-top: 0.75em;
 
@@ -87,19 +110,19 @@
     }
 
     h1 {
-        font-size: calc(var(--heading-base-size) * pow(var(--heading-scale-factor), 3));
+        font-size: calc(var(--heading-base-size) * pow(var(--heading-scale-factor), 4));
         font-weight: 400;
     }
     h2 {
-        font-size: calc(var(--heading-base-size) * pow(var(--heading-scale-factor), 2));
+        font-size: calc(var(--heading-base-size) * pow(var(--heading-scale-factor), 3));
         font-weight: 400;
     }
     h3 {
-        font-size: calc(var(--heading-base-size) * pow(var(--heading-scale-factor), 1));
+        font-size: calc(var(--heading-base-size) * pow(var(--heading-scale-factor), 2));
         font-weight: 400;
     }
     h4 {
-        font-size: calc(var(--heading-base-size) * pow(var(--heading-scale-factor), 0));
+        font-size: calc(var(--heading-base-size) * pow(var(--heading-scale-factor), 1));
         font-weight: 400;
     }
 
@@ -145,13 +168,17 @@
         }
     }
 
-    a {
-        color: hsl(from var(--accent) h s 65%);
-        text-decoration: none;
+    .text {
+        a {
+            color: hsl(from var(--accent) h s 65%);
+            text-decoration: none;
 
-        &:hover {
-            color: hsl(from var(--accent) h s 50%);
-            text-decoration: underline solid hsl(from var(--accent) h s 60%) 2px;
+            word-break: break-all;
+
+            &:hover {
+                color: hsl(from var(--accent) h s 50%);
+                text-decoration: underline solid hsl(from var(--accent) h s 60%) 2px;
+            }
         }
     }
 
@@ -160,11 +187,34 @@
         font-family: var(--font-monospace);
         line-height: 1.25;
 
-        font-size: 12pt;
+        font-size: 0.8em;
+    }
+
+    p > code {
+        background: #0001;
+        padding: 0 1px;
     }
 
     .katex {
-        font-size: 15pt !important;
+        font-size: 1.1em !important;
+
+        img {
+            display: inline-block;
+            margin: 0 0.125em;
+
+            width: auto;
+            max-width: none;
+
+            height: auto;
+            max-height: none;
+
+            display: initial;
+            vertical-align: sub;
+        }
+    }
+
+    .katex-display > .katex {
+        font-size: 1.4em !important;
     }
 
     pre:not(:has(.katex)) {
@@ -178,7 +228,14 @@
 
         border-radius: 2px;
         border: 2px solid #ddd;
-        box-shadow: 0 0 0.5rem #0001;
+        box-shadow: 0 0 0.5rem #00000012;
+
+        font-size: 1em;
+
+        @media screen and (width <= 600px) {
+            min-width: auto;
+            max-width: 100%;
+        }
     }
 
     pre:has(.katex) {
@@ -186,6 +243,17 @@
         max-width: calc(100% - 2rem);
         overflow-x: auto;
         margin: 0 auto;
+
+        @media screen and (width <= 600px) {
+            max-width: 100%;
+        }
+    }
+
+    li {
+        pre:has(.katex) {
+            margin: 0 auto;
+            max-width: 100%;
+        }
     }
 
     img,
@@ -193,12 +261,22 @@
         display: block;
 
         margin: 1rem auto;
-        max-width: calc(100% - 2rem);
-        max-height: 50vh;
+        width: auto;
+        height: auto;
+
+        /* max-width: calc(100% - 2rem); */
+
+        max-height: 30vh;
 
         /* border-radius: 2px;
         border: 2px solid #ddd;
         box-shadow: 0 0 0.5rem #0001; */
+
+        @media screen and (width <= 600px) {
+            width: 100%;
+
+            max-width: calc(100% - 2rem);
+        }
     }
 
     hr {
@@ -207,6 +285,11 @@
         height: 4px;
         background: hsl(266, 100%, 70%);
         border: none;
+
+        @media screen and (width <= 600px) {
+            width: 100%;
+            margin: 2rem 0;
+        }
     }
 
     /* main {
@@ -227,6 +310,10 @@
 
         &:has(.content.wide) {
             grid-template-columns: auto 1fr;
+
+            @media screen and (width <= 600px) {
+                grid-template-columns: auto;
+            }
         }
 
         > header {
@@ -234,7 +321,7 @@
 
             grid-column: 1 / -1;
             grid-template-columns: subgrid;
-            grid-template-rows: auto auto;
+            grid-template-rows: calc(5px * 31) auto;
 
             row-gap: 2rem;
 
@@ -267,13 +354,15 @@
             > .logo {
                 padding-right: 1rem;
 
+                text-decoration: none;
+
                 display: grid;
-                place-content: end end;
+                place-self: end end;
 
                 font-family: 'Iosevka';
-                font-size: 32pt;
+                font-size: calc(var(--heading-base-size) * pow(var(--heading-scale-factor), 2));
                 font-weight: 600;
-                line-height: 1;
+                line-height: 1.2;
 
                 color: #fff;
 
@@ -314,11 +403,18 @@
 
             > .content {
                 grid-column: 2 / 3;
-                padding: 1.15rem 1rem 2rem;
+                padding: 1.15rem 1rem 6rem;
                 min-width: 0;
 
                 &.wide {
-                    padding-right: 2rem;
+                    padding-right: 1.5rem;
+                }
+
+                @media screen and (width <= 600px) {
+                    &,
+                    &.wide {
+                        padding: 1rem 1rem 6rem;
+                    }
                 }
             }
         }
@@ -335,6 +431,41 @@
             > main {
                 > .sidebar {
                     width: auto;
+                }
+            }
+        }
+
+        @media screen and (width <= 600px) {
+            grid-template-columns: auto;
+
+            > header {
+                grid-template-rows: calc(5px * 31) auto auto;
+                gap: 0;
+                padding: 0 0.5rem 0.5rem;
+
+                > .logo {
+                    grid-column: 1 / 2;
+                    grid-row: 2 / 3;
+
+                    place-self: start start;
+
+                    padding: 0.5rem;
+                    margin-top: 1rem;
+                }
+
+                > .header-title {
+                    grid-column: 1 / 2;
+                    grid-row: 3 / 4;
+
+                    place-content: start start;
+
+                    padding: 0.5rem;
+                }
+            }
+
+            > main {
+                > .sidebar {
+                    display: none;
                 }
             }
         }
@@ -365,8 +496,6 @@
             cursor: pointer;
 
             color: hsl(from var(--accent) h s 65%);
-
-            text-decoration: none;
 
             height: 2rem;
             padding: 0 0.75rem;
@@ -403,16 +532,45 @@
         min-height: 4rem;
     }
 
+    .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .tag {
+        display: inline-block;
+
+        font-size: 0.8em;
+
+        background: #555;
+        color: #fff;
+        padding: 0 0.3rem;
+        border-radius: 3px;
+
+        font-family: var(--font-monospace);
+
+        &:is(a) {
+            &:hover {
+                background: hsl(from var(--accent) h calc(s - 50) 65%);
+            }
+        }
+    }
+
     .blog-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(18rem, 22rem));
         gap: 1rem;
+
+        /* @media screen and (width <= 600px) { */
+        /* gap: 0.5rem; */
+        /* } */
 
         .blog-item {
             padding: 0.5rem;
 
             display: grid;
-            grid-template-rows: auto 1fr;
+            grid-template-rows: auto 1fr auto;
             gap: 0.5rem;
 
             font-size: 13pt;
@@ -421,28 +579,42 @@
             color: #fff;
             background: #333;
 
-            border-radius: 2px;
+            border-radius: 3px;
             border: 4px solid #333;
 
             cursor: pointer;
 
-            > .title a {
+            > .title {
                 color: hsl(from var(--accent) h s 85%);
 
-                text-decoration: none;
+                font-size: calc(var(--heading-base-size) * pow(var(--heading-scale-factor), 1));
+                line-height: 1.25;
+                font-weight: 600;
+            }
 
-                font-size: 22pt;
-                font-weight: 500;
-                line-height: 22pt;
+            > .tags {
+                font-size: 16px;
             }
 
             &:hover {
-                > .title a {
+                > .title {
                     color: hsl(from var(--accent) h s 65%);
                 }
 
                 background: #fff;
                 color: #333;
+            }
+
+            @media screen and (width <= 600px) {
+                /* > .title {
+                    color: hsl(from var(--accent) h s 70%);
+                }
+
+                background: #fff;
+                color: #333; */
+
+                background: #444;
+                border-color: #444;
             }
         }
     }

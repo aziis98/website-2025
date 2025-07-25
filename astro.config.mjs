@@ -19,6 +19,9 @@ export default defineConfig({
             },
         },
     },
+    server: {
+        allowedHosts: true,
+    },
     integrations: [
         preact(),
         icon(),

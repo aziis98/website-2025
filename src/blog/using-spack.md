@@ -6,8 +6,6 @@ tags: ['spack', 'c', 'mpi', 'cluster', 'lang-en']
 publish_date: 2025/02/11
 ---
 
-# Using Spack
-
 ## Introduction
 
 Recently I've been working on an university C project. In this project I have to

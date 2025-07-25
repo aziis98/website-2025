@@ -140,7 +140,7 @@ function range(min: number, max: number): number[] {
 // clamp(5, { min: 7, max: 32423 })
 
 const SPROUT_DIE_CHANCE = 0.01
-const SPROUT_BORN_CHANCE = 0.3
+const SPROUT_BORN_CHANCE = 0.5
 
 type Sprout = { x: number; y: number; direction: number }
 
@@ -316,7 +316,7 @@ const renderPixelart = (
     const gridWidth = Math.floor(ctx.canvas.width / cellSize)
     const gridHeight = Math.floor(ctx.canvas.height / cellSize)
 
-    const SIDE_SIZE = 0.2
+    const SIDE_SIZE = 0.25
 
     const sproutDensity = 0.005
     const maxSprouts = Math.floor(Math.max(1, gridWidth * gridHeight * sproutDensity))

@@ -1,8 +1,10 @@
 ---
 import Base from '@/layout/Base.astro'
+
 import type { GetStaticPaths } from 'astro'
 import { render } from 'astro:content'
 import { getCollection } from 'astro:content'
+
 export const getStaticPaths = (async () => {
     const posts = await getCollection('blog')
 
@@ -23,7 +25,7 @@ const { Content } = await render(post)
 
 <Base>
     <h1 slot="header-title">{post.data.title}</h1>
-    <div class="content">
+    <div class="content text">
         <Content />
     </div>
 </Base>

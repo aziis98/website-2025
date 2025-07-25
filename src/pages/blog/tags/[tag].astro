@@ -1,0 +1,45 @@
+---
+import Base from '@/layout/Base.astro'
+
+import type { GetStaticPaths } from 'astro'
+
+import { getPostsByTag } from '@/tags'
+
+export const getStaticPaths = (async () => {
+    return [...(await getPostsByTag()).entries()].map(([tag, posts]) => ({
+        params: { tag },
+        props: { tag, posts },
+    }))
+}) satisfies GetStaticPaths
+
+// const { post } = Astro.props
+// const { Content } = await render(post)
+
+const { tag, posts } = Astro.props
+---
+
+<Base>
+    <h1 slot="header-title">Blog</h1>
+    <div class="content wide">
+        <h2>Posts with tag: <div class="tag">{tag}</div></h2>
+        <div class="blog-grid">
+            {
+                posts
+                    .filter(post => !post.data.draft)
+                    // sort by .data.publish_date that is in format "YYYY/MM/DD"
+                    .sort((a, b) => new Date(b.data.publish_date).getTime() - new Date(a.data.publish_date).getTime())
+                    .map(post => (
+                        <a class="blog-item" href={`/blog/${post.id}`}>
+                            <div class="title">{post.data.title}</div>
+                            <div class="description">{post.data.description}</div>
+                            <div class="tags">
+                                {post.data.tags.map(tag => (
+                                    <span class="tag">{tag}</span>
+                                ))}
+                            </div>
+                        </a>
+                    ))
+            }
+        </div>
+    </div>
+</Base>

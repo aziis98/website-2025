@@ -1,13 +1,16 @@
 ---
 import Base from '@/layout/Base.astro'
+import { getPosts, getPostsByTag } from '@/tags'
 import { getCollection } from 'astro:content'
 
-const posts = await getCollection('blog')
+const posts = await getPosts()
+const postsByTags = await getPostsByTag()
 ---
 
 <Base>
     <h1 slot="header-title">Blog</h1>
     <div class="content wide">
+        <h2>Posts</h2>
         <div class="blog-grid">
             {
                 posts
@@ -16,13 +19,28 @@ const posts = await getCollection('blog')
                     // sort by .data.publish_date that is in format "YYYY/MM/DD"
                     .sort((a, b) => new Date(b.data.publish_date).getTime() - new Date(a.data.publish_date).getTime())
                     .map(post => (
-                        <div class="blog-item">
-                            <div class="title">
-                                <a href={`/blog/${post.id}`}>{post.data.title}</a>
-                            </div>
+                        <a class="blog-item" href={`/blog/${post.id}`}>
+                            <div class="title">{post.data.title}</div>
                             <div class="description">{post.data.description}</div>
-                        </div>
+                            <div class="tags">
+                                {post.data.tags.map(tag => (
+                                    <span class="tag">{tag}</span>
+                                ))}
+                            </div>
+                        </a>
                     ))
+            }
+        </div>
+
+        <h2>Tags</h2>
+        <div class="tags">
+            {
+                postsByTags.entries().map(([tag, posts]) => (
+                    <a class="tag" href={`/blog/tags/${tag}`}>
+                        {tag}
+                        {posts.length > 1 && <>({posts.length})</>}
+                    </a>
+                ))
             }
         </div>
     </div>

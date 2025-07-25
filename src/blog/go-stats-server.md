@@ -5,8 +5,6 @@ tags: ['go', 'tcp', 'chatgpt', 'actions', 'side-project', 'lang-en']
 publish_date: 2023/12/25
 ---
 
-# 5 lines of bash in, go project out
-
 This is another tale of [a small project I made](https://github.com/aziis98/go-stats-server) in Go with the help of ChatGPT, I'm yet again amazed by the power of this tool that this time helped me translate 5 bash commands into a small Go program (and full project actually as we will see).
 
 Here is the full conversation if you are interested, I will borrow some snippets from it in this article with minor edits for clarity.
