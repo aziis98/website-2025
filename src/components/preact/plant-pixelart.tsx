@@ -316,7 +316,7 @@ const renderPixelart = (
     const gridWidth = Math.floor(ctx.canvas.width / cellSize)
     const gridHeight = Math.floor(ctx.canvas.height / cellSize)
 
-    const SIDE_SIZE = 0.0
+    const SIDE_SIZE = 0.25
     const CENTER_SIZE = 0.25
 
     const sproutDensity = 0.005

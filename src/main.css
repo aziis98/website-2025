@@ -12,6 +12,8 @@
 
     --heading-base-size: 18px;
     --heading-scale-factor: 1.41;
+
+    --card-shadow: 0 0 1rem #0001, 0 0.125rem 0.25rem #0004;
 }
 
 @media screen and (width <= 600px) {
@@ -48,11 +50,6 @@
                 margin-bottom: 1rem;
             }
         }
-    }
-
-    /* text selection */
-    ::selection {
-        background: #0003;
     }
 }
 
@@ -186,6 +183,58 @@
                 text-decoration: underline solid hsl(from var(--accent) h s 60%) 2px;
             }
         }
+
+        strong {
+            font-weight: 600;
+        }
+
+        em {
+            font-style: italic;
+        }
+
+        strike {
+            text-decoration: line-through;
+        }
+
+        img,
+        p > img {
+            display: block;
+
+            margin: 1rem auto;
+
+            width: 100%;
+            max-width: calc(100% - 2rem);
+            max-height: 30vh;
+            object-fit: contain;
+
+            @media screen and (width <= 600px) {
+                width: 100%;
+
+                max-width: calc(100% - 2rem);
+            }
+        }
+
+        .katex {
+            font-size: 1.1em !important;
+
+            img {
+                display: inline-block;
+                margin: 0 0.125em;
+
+                width: auto;
+                max-width: none;
+
+                height: auto;
+                max-height: none;
+
+                display: initial;
+                vertical-align: sub;
+            }
+        }
+
+        .katex-display > .katex {
+            font-size: 1.4em !important;
+        }
     }
 
     pre,
@@ -199,28 +248,6 @@
     p > code {
         background: #0001;
         padding: 0 1px;
-    }
-
-    .katex {
-        font-size: 1.1em !important;
-
-        img {
-            display: inline-block;
-            margin: 0 0.125em;
-
-            width: auto;
-            max-width: none;
-
-            height: auto;
-            max-height: none;
-
-            display: initial;
-            vertical-align: sub;
-        }
-    }
-
-    .katex-display > .katex {
-        font-size: 1.4em !important;
     }
 
     pre:not(:has(.katex)) {
@@ -262,28 +289,6 @@
         }
     }
 
-    img,
-    p > img {
-        display: block;
-
-        margin: 1rem auto;
-
-        width: 100%;
-        max-width: calc(100% - 2rem);
-        max-height: 30vh;
-        object-fit: contain;
-
-        /* border-radius: 2px;
-        border: 2px solid #ddd;
-        box-shadow: 0 0 0.5rem #0001; */
-
-        @media screen and (width <= 600px) {
-            width: 100%;
-
-            max-width: calc(100% - 2rem);
-        }
-    }
-
     hr {
         margin: 2rem;
         width: calc(100% - 4rem);
@@ -297,13 +302,9 @@
         }
     }
 
-    /* main {
-        .pixelart-plant-art {
-            max-width: calc(100% - 6rem);
-            max-height: 3rem;
-            margin: 3rem;
-        }
-    } */
+    img {
+        object-fit: contain;
+    }
 }
 
 @layer components {
@@ -601,15 +602,17 @@
             line-height: 1.5;
 
             color: #ddd;
-            background: #444;
 
+            background: linear-gradient(calc(180deg - 30deg), #444, #333);
             border-radius: 3px;
             border: 4px solid #444;
 
             cursor: pointer;
 
+            box-shadow: var(--card-shadow);
+
             > .title {
-                color: hsl(from var(--accent) h 80% 80%);
+                color: hsl(from var(--accent) h 85% 85%);
 
                 font-size: calc(var(--heading-base-size) * pow(var(--heading-scale-factor), 1));
                 line-height: 1.25;
@@ -627,6 +630,8 @@
 
                 background: #fff;
                 color: #333;
+
+                border: 4px solid #444;
             }
 
             @media screen and (width <= 600px) {
@@ -639,6 +644,47 @@
 
                 background: #444;
                 border-color: #444;
+            }
+        }
+
+        @media screen and (width <= 600px) {
+            grid-template-columns: auto;
+        }
+    }
+
+    .art-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, auto));
+        grid-auto-rows: 15rem;
+        gap: var(--main-gap);
+
+        img {
+            background: #fff;
+
+            object-fit: cover;
+
+            border-radius: 0.25rem;
+
+            width: 100%;
+            height: 100%;
+
+            box-shadow: var(--card-shadow);
+
+            &.interactive {
+                :hover {
+                    max-width: 100%;
+                    object-fit: contain;
+                }
+            }
+        }
+
+        @media screen and (width <= 600px) {
+            grid-template-columns: repeat(auto-fill, minmax(100%, auto));
+            grid-auto-rows: 13rem;
+
+            img {
+                width: 100%;
+                height: 100%;
             }
         }
     }

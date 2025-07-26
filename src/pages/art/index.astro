@@ -1,0 +1,61 @@
+---
+import { getArtCollections } from '@/art'
+import Base from '@/layout/Base.astro'
+import { Image } from 'astro:assets'
+
+const { procreate: procreateWorks, old: oldWorks } = await getArtCollections()
+---
+
+<Base>
+    <h1 slot="header-title">Art</h1>
+    <div class="content wide">
+        <!-- <Image -->
+
+        <div class="text">
+            <p>
+                All these images are low resolution just for web display. If you like any of them and would like to use
+                it for personal use, you can contact me to get the original high resolution images.
+            </p>
+            <p>
+                All images are shown with <code>object-fit: cover</code> to view them all nicely in the grid. To see the
+                full image, try hovering on it.
+            </p>
+            <h2>Procreate ('23 &mdash; Now)</h2>
+        </div>
+        <div class="art-grid">
+            {
+                procreateWorks.map(({ path, module }) => (
+                    <div class="art-grid-item interactive">
+                        <Image
+                            src={module}
+                            alt={path}
+                            width={1920 / 2}
+                            height={1080 / 2}
+                            loading="lazy"
+                            decoding="async"
+                        />
+                    </div>
+                ))
+            }
+        </div>
+        <div class="text">
+            <h2>Older Works (2015 &mdash; 2020)</h2>
+        </div>
+        <div class="art-grid">
+            {
+                oldWorks.toReversed().map(({ path, module }) => (
+                    <div class="art-grid-item interactive">
+                        <Image
+                            src={module}
+                            alt={path}
+                            width={1920 / 2}
+                            height={1080 / 2}
+                            loading="lazy"
+                            decoding="async"
+                        />
+                    </div>
+                ))
+            }
+        </div>
+    </div>
+</Base>

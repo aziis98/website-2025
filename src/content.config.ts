@@ -1,7 +1,7 @@
 import { defineCollection, z } from 'astro:content'
 
 // 2. Import loader(s)
-import { glob } from 'astro/loaders'
+import { glob, file } from 'astro/loaders'
 
 // 3. Define your collection(s)
 const blog = defineCollection({

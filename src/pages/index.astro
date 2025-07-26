@@ -2,6 +2,9 @@
 import Base from '@/layout/Base.astro'
 import { PixelartPlantRect } from '@/components/preact/plant-pixelart'
 import { getPosts } from '@/tags'
+import { getArtCollections } from '@/art'
+import { Image } from 'astro:assets'
+import { Icon } from 'astro-icon/components'
 
 const posts = await getPosts()
 const recentPosts = posts
@@ -9,11 +12,83 @@ const recentPosts = posts
     // sort by .data.publish_date that is in format "YYYY/MM/DD"
     .sort((a, b) => new Date(b.data.publish_date).getTime() - new Date(a.data.publish_date).getTime())
     .slice(0, 3)
+
+const { procreate: procreateWorks } = await getArtCollections()
+const recentArtWorks = procreateWorks.slice(0, 3)
 ---
 
 <Base>
     <h1 slot="header-title">Website</h1>
     <main class="content wide">
+        <div class="text">
+            <h2>About</h2>
+
+            <!-- <h1 class="left"></h1>
+            <p>
+                On the web I go by <Link href="https://aziis98.com">@aziis98</Link>, I am a Mathematics student at
+                the University of Pisa. I have always been passionate about computer science (at all levels) and for
+                some years now I have been a <em>macchinista</em> of the PHC, among other things we manage the server
+                with the students' pages called <Link href="https://poisson.phc.dm.unipi.it">Poisson</Link>.
+            </p>
+            <p>
+                In this site I will mainly upload <Link href="/articles">articles</Link> on what I do or other random
+                things such as the <em>generative art</em> (procedural art to be precise in this times) stuff found in
+                the <Link href="/art">artistic</Link> section.
+            </p>
+            <p>
+                Socials:
+                <a href="https://github.com/aziis98/">GitHub</a>,
+                <a href="https://news.ycombinator.com/user?id=aziis98">HackerNews</a>,
+                <a href="https://lobste.rs/~aziis98">Lobsters</a>,
+                <a href="https://www.instagram.com/">Instagram</a>.
+            </p> -->
+
+            <p>Hi! I'm Antonio De&nbsp;Lucreziis (on the web I go by <a href="https://aziis98.com">@aziis98</a>).</p>
+            <p>
+                I am a <a href="https://www.dm.unipi.it/">Mathematics student at the University of Pisa</a>. I have
+                always been passionate about computer science (at all levels) and for some years now I have been a <em
+                    >macchinista</em
+                > of the <a href="https://phc.dm.unipi.it/">PHC</a>, where we manage the server with the students' pages
+                called <a href="https://poisson.phc.dm.unipi.it">Poisson</a>.
+            </p>
+            <p>
+                In this site I will mainly write posts about what I do or other random things such as the
+                <strike>generative art</strike>
+                <em>procedural art</em> stuff found in the <a href="/art">artistic</a> section.
+            </p>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <strong>Socials:</strong>
+
+            <a style="display: grid;" href="https://github.com/aziis98" title="GitHub profile">
+                <img src="https://github.com/favicon.ico" alt="GitHub" width="24" height="24" />
+            </a>
+            <a style="display: grid;" href="https://news.ycombinator.com/user?id=aziis98" title="HackerNews profile">
+                <img src="https://news.ycombinator.com/favicon.ico" alt="HackerNews" width="24" height="24" />
+            </a>
+            <a style="display: grid;" href="https://lobste.rs/~aziis98" title="Lobsters profile">
+                <img src="https://lobste.rs/favicon.ico" alt="Lobsters" width="24" height="24" />
+            </a>
+            <a style="display: grid;" href="https://www.instagram.com/aziis98" title="Instagram profile">
+                <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/250px-Instagram_icon.png"
+                    alt="Instagram"
+                    width="24"
+                    height="24"
+                />
+            </a>
+        </div>
+
+        <div class="art-separator" style="max-width: 80ch; margin: 3rem 0 2.25rem;">
+            <PixelartPlantRect
+                client:visible
+                updateInterval={25}
+                stopTimeout={1000 * 60}
+                height={5 * 7}
+                options={{ cellColor: 'hsl(266 90% 75% / 0.1)', spawnLocation: 'left' }}
+            />
+        </div>
         <div class="text">
             <h2>
                 <a href="/blog">Blog</a>
@@ -34,13 +109,13 @@ const recentPosts = posts
                 ))
             }
         </div>
-        <div class="art-separator" style="width: 80ch; margin: 3rem 0 2.25rem;">
+        <div class="art-separator" style="max-width: 80ch; margin: 3rem 0 2.25rem;">
             <PixelartPlantRect
                 client:visible
-                updateInterval={75}
-                stopTimeout={1000 * 30}
-                height={5 * 10}
-                options={{ cellColor: 'hsl(266 100% 70% / 0.1)', spawnLocation: 'top' }}
+                updateInterval={25}
+                stopTimeout={1000 * 60}
+                height={5 * 7}
+                options={{ cellColor: 'hsl(266 90% 75% / 0.1)', spawnLocation: 'left' }}
             />
         </div>
 
@@ -48,31 +123,39 @@ const recentPosts = posts
             <h2>
                 <a href="/art">Art</a>
             </h2>
-            <p>Sometimes I also so some procedural art stuff as you can see from this shiny new website design.</p>
+            <p>
+                Sometimes I also do some art as you can see from this <em>shiny new website design</em>. My older works
+                and this new website are <strike
+                    title="This name was recently claimed by AI stuff I do not associate with">generative art</strike
+                >
+                <strong>procedural art</strong> that is art generated by code using pseudo-random algorithms.
+            </p>
         </div>
-        <h3>Main Works</h3>
-        <div class="blog-grid">
+        <h3>Recent Works</h3>
+        <div class="art-grid">
             {
-                recentPosts.map(post => (
-                    <a class="blog-item" href={`/blog/${post.id}`}>
-                        <div class="title">{post.data.title}</div>
-                        <div class="description">{post.data.description}</div>
-                        <div class="tags">
-                            {post.data.tags.map(tag => (
-                                <span class="tag">{tag}</span>
-                            ))}
-                        </div>
-                    </a>
+                recentArtWorks.map(({ path, module }) => (
+                    <div class="art-grid-item">
+                        <Image
+                            src={module}
+                            alt={path}
+                            width={1920 / 2}
+                            height={1080 / 2}
+                            loading="lazy"
+                            decoding="async"
+                        />
+                    </div>
                 ))
             }
         </div>
-        <div class="art-separator" style="width: 80ch; margin: 3rem 0 2.25rem;">
+
+        <div class="art-separator" style="max-width: 80ch; margin: 3rem 0 2.25rem;">
             <PixelartPlantRect
                 client:visible
-                updateInterval={75}
-                stopTimeout={1000 * 30}
-                height={5 * 10}
-                options={{ cellColor: 'hsl(266 100% 70% / 0.1)', spawnLocation: 'top' }}
+                updateInterval={25}
+                stopTimeout={1000 * 60}
+                height={5 * 7}
+                options={{ cellColor: 'hsl(266 90% 75% / 0.1)', spawnLocation: 'left' }}
             />
         </div>
 
@@ -106,16 +189,16 @@ const recentPosts = posts
             }
         </div>
     </main>
+</Base>
 
-    <!-- <div class="art" style="width: 100%; max-width: 52rem; height: 4rem;">
+<!-- <div class="art" style="width: 100%; max-width: 52rem; height: 4rem;">
         <PixelartPlantRect client:visible />
     </div>
 
     <main></main> -->
 
-    <!-- <script>
+<!-- <script>
         import { decorateHeadings } from '@/components/preact/plant-pixelart'
 
         decorateHeadings()
     </script> -->
-</Base>
