@@ -30,11 +30,6 @@ const recentPosts = posts
                     <a class="blog-item" href={`/blog/${post.id}`}>
                         <div class="title">{post.data.title}</div>
                         <div class="description">{post.data.description}</div>
-                        <div class="tags">
-                            {post.data.tags.map(tag => (
-                                <span class="tag">{tag}</span>
-                            ))}
-                        </div>
                     </a>
                 ))
             }
@@ -42,10 +37,10 @@ const recentPosts = posts
         <div class="art-separator" style="width: 80ch; margin: 3rem 0 2.25rem;">
             <PixelartPlantRect
                 client:visible
-                updateInterval={10}
-                stopTimeout={5000}
+                updateInterval={75}
+                stopTimeout={1000 * 30}
                 height={5 * 10}
-                options={{ cellColor: 'hsl(266, 100%, 70%)', spawnLocation: 'top' }}
+                options={{ cellColor: 'hsl(266 100% 70% / 0.1)', spawnLocation: 'top' }}
             />
         </div>
 
@@ -55,7 +50,7 @@ const recentPosts = posts
             </h2>
             <p>Sometimes I also so some procedural art stuff as you can see from this shiny new website design.</p>
         </div>
-        <h3>Main works</h3>
+        <h3>Main Works</h3>
         <div class="blog-grid">
             {
                 recentPosts.map(post => (
@@ -74,10 +69,10 @@ const recentPosts = posts
         <div class="art-separator" style="width: 80ch; margin: 3rem 0 2.25rem;">
             <PixelartPlantRect
                 client:visible
-                updateInterval={10}
-                stopTimeout={5000}
+                updateInterval={75}
+                stopTimeout={1000 * 30}
                 height={5 * 10}
-                options={{ cellColor: 'hsl(266, 100%, 70%)', spawnLocation: 'top' }}
+                options={{ cellColor: 'hsl(266 100% 70% / 0.1)', spawnLocation: 'top' }}
             />
         </div>
 
@@ -94,6 +89,7 @@ const recentPosts = posts
                 <a href="https://git.phc.dm.unipi.it/aziis98">Gitea</a> instance.
             </p>
         </div>
+        <h3>Featured Projects</h3>
         <div class="blog-grid">
             {
                 recentPosts.map(post => (
