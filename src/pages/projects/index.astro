@@ -1,5 +1,236 @@
 ---
 import Base from '@/layout/Base.astro'
+import { Icon } from 'astro-icon/components'
+
+// use a fetch call to github api to get pinned repositories for @aziis98
+
+// const featuredRepositories = [
+//     'gdgpisa/devfest-2025',
+//     'aziis98/kauffman-polynomial',
+//     'aziis98/asd-2024',
+//     'aziis98/arnoldi-distribuito',
+//     'aziis98/mup',
+//     'aziis98/opencv-maze-solver',
+// ]
+
+// const repoData = await Promise.all(
+//     featuredRepositories.map(repo => {
+//         return fetch(`https://api.github.com/repos/${repo}`)
+//             .then(response => response.json())
+//             .catch(error => {
+//                 console.error(`Error fetching repository ${repo}:`, error)
+//                 return null
+//             })
+//     }),
+// )
+
+const { default: langColors } = await import('@/assets/github-language-colors.json')
+
+const technologies: Record<
+    string,
+    {
+        icon: string
+        url?: string
+        color?: string
+    }
+> = {
+    ['Go']: {
+        icon: 'simple-icons:go',
+        url: 'https://go.dev/',
+        color: langColors['Go'].color,
+    },
+    ['Python']: {
+        icon: 'simple-icons:python',
+        url: 'https://www.python.org/',
+        color: langColors['Python'].color,
+    },
+    ['Rust']: {
+        icon: 'simple-icons:rust',
+        url: 'https://www.rust-lang.org/',
+        color: langColors['Rust'].color,
+    },
+    ['C']: {
+        icon: 'simple-icons:c',
+        url: 'https://en.wikipedia.org/wiki/C_(programming_language)',
+        color: langColors['C'].color,
+    },
+    ['HTML']: {
+        icon: 'simple-icons:html5',
+        url: 'https://developer.mozilla.org/en-US/docs/Web/HTML',
+        color: langColors['HTML'].color,
+    },
+    ['CSS']: {
+        icon: 'simple-icons:css3',
+        url: 'https://developer.mozilla.org/en-US/docs/Web/CSS',
+        color: langColors['CSS'].color,
+    },
+    ['JavaScript']: {
+        icon: 'simple-icons:javascript',
+        url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript',
+        color: langColors['JavaScript'].color,
+    },
+    ['TypeScript']: {
+        icon: 'simple-icons:typescript',
+        url: 'https://www.typescriptlang.org/',
+        color: langColors['TypeScript'].color,
+    },
+    ['Astro']: {
+        icon: 'simple-icons:astro',
+        url: 'https://astro.build/',
+        color: langColors['Astro'].color,
+    },
+    ['Lean']: {
+        icon: 'vscode-icons:file-type-light-lean',
+        url: 'https://leanprover.github.io/',
+        color: langColors['Lean 4'].color,
+    },
+    ['Docker']: {
+        icon: 'simple-icons:docker',
+        url: 'https://www.docker.com/',
+        color: langColors['Dockerfile'].color,
+    },
+    ['Typst']: {
+        icon: 'simple-icons:typst',
+        url: 'https://typst.app/',
+        color: langColors['Typst'].color,
+    },
+
+    ['NodeJS']: {
+        icon: 'simple-icons:nodedotjs',
+        url: 'https://nodejs.org/',
+    },
+}
+
+const repoData: {
+    html_url: string
+    full_name: string
+    description: string
+    topics?: string[]
+    stargazers_count: number
+    forks_count: number
+    technologies?: string[]
+}[] = [
+    {
+        html_url: 'https://github.com/gdgpisa/devfest-2025',
+        full_name: 'gdgpisa/devfest-2025',
+        description: 'New website for DevFest 2025 made from scratch in Astro',
+        topics: ['astro', 'gdg', 'gdg-devfest', 'pisa', 'website'],
+        stargazers_count: 4,
+        forks_count: 1,
+        technologies: ['Astro'],
+    },
+    {
+        html_url: 'https://github.com/aziis98/kauffman-polynomial',
+        full_name: 'aziis98/kauffman-polynomial',
+        description:
+            'Course Project: Computational Laboratory - Implementation of the knot theory Kauffman polynomial regular isotopy invariant in Python',
+        topics: ['homfly', 'invariants', 'kauffman-polynomial', 'knot-theory', 'python', 'sympy', 'uv'],
+        stargazers_count: 2,
+        forks_count: 0,
+        technologies: ['Python', 'Typst'],
+    },
+    {
+        html_url: 'https://github.com/aziis98/mup',
+        full_name: 'aziis98/mup',
+        description: 'A micro file uploader written in Go to easily share files over LAN',
+        topics: [],
+        stargazers_count: 176,
+        forks_count: 6,
+        technologies: ['Go'],
+    },
+    {
+        html_url: 'https://github.com/Unipisa/dm-planimetrie',
+        full_name: 'Unipisa/dm-planimetrie',
+        description: 'Floor plan project for the Department of Mathematics at the University of Pisa',
+        topics: ['threejs', 'sketchup', 'vite'],
+        stargazers_count: 1,
+        forks_count: 0,
+        technologies: ['JavaScript'],
+    },
+    {
+        html_url: 'https://github.com/aziis98/opencv-maze-solver',
+        full_name: 'aziis98/opencv-maze-solver',
+        description:
+            'Summer project before vaction, an OpenCV-powered whiteboard maze solver (A* by NetworkX) with start/end points decided by April Tags',
+        topics: ['apriltags', 'networkx', 'opencv', 'python', 'summer-project', 'whiteboard'],
+        stargazers_count: 1,
+        forks_count: 0,
+        technologies: ['Python'],
+    },
+    {
+        html_url: 'https://github.com/aziis98/asd-2024',
+        full_name: 'aziis98/asd-2024',
+        description:
+            'Course Project: Algorithms and Data Structures - pangenome graphs, gfa parsing, analysis and visualization',
+        topics: ['algorithms-and-data-structures', 'gfa', 'graphs', 'macroquad', 'visualization'],
+        stargazers_count: 1,
+        forks_count: 0,
+        technologies: ['Rust'],
+    },
+    {
+        html_url: 'https://github.com/aziis98/arnoldi-distribuito',
+        full_name: 'aziis98/arnoldi-distribuito',
+        description:
+            'Course Project: Scientific Computing, HPC - Distributed Arnoldi Iteration for Eigenvalues with PETSc in C',
+        topics: ['distributed', 'hpc', 'mpi', 'petsc', 'scientific-computing'],
+        stargazers_count: 3,
+        forks_count: 1,
+        technologies: ['C'],
+    },
+    {
+        html_url: 'https://github.com/aziis98/go-stats-server',
+        full_name: 'aziis98/go-stats-server',
+        description: 'A small tcp server for monitoring a node in a cluster',
+        topics: [],
+        stargazers_count: 2,
+        forks_count: 0,
+        technologies: ['Go'],
+    },
+]
+
+const phcGiteaRepos: {
+    html_url: string
+    full_name: string
+    description: string
+    technologies: string[]
+}[] = [
+    {
+        html_url: 'https://git.phc.dm.unipi.it/phc/website',
+        full_name: 'phc/website',
+        description: 'New website for the PHC',
+        technologies: ['Astro'],
+    },
+    {
+        html_url: 'https://git.phc.dm.unipi.it/phc/orario',
+        full_name: 'phc/orario',
+        description: 'Static website to display class schedules and create custom timetables',
+        technologies: ['HTML', 'CSS', 'JavaScript'],
+    },
+    {
+        html_url: 'https://git.phc.dm.unipi.it/phc/problemi',
+        full_name: 'phc/problemi',
+        description: 'Problem board website and the ability to submit solutions in markdown and latex',
+        technologies: ['HTML', 'CSS', 'JavaScript', 'NodeJS'],
+    },
+    {
+        html_url: 'https://git.phc.dm.unipi.it/aziis98/ggwp',
+        full_name: 'aziis98/ggwp',
+        description: 'Scoreboard for the GGWP competition',
+        technologies: ['Astro'],
+    },
+    {
+        html_url: 'https://git.phc.dm.unipi.it/phc/magma_kernel',
+        full_name: 'phc/magma_kernel',
+        description: 'A magma kernel for Jupyter, based on bash_kernel',
+        technologies: ['Python'],
+    },
+    {
+        html_url: 'https://git.phc.dm.unipi.it/phc/lean4game',
+        full_name: 'phc/lean4game',
+        description: 'Fork of lean4game with docker support',
+        technologies: ['Lean', 'Docker'],
+    },
+]
 ---
 
 <Base>
@@ -9,6 +240,121 @@ import Base from '@/layout/Base.astro'
             <p>
                 This is a list of my projects, mostly related to web development and programming. Some of them are open
                 source, while others are private or for personal use.
+            </p>
+        </div>
+
+        <h2>Featured GitHub Projects</h2>
+        <div class="project-grid">
+            {
+                repoData.map(repo => (
+                    <div class="project-item">
+                        <div class="name">
+                            <Icon name="octicon:repo-16" />
+                            <a href={repo.html_url} target="_blank" rel="noopener noreferrer">
+                                {repo.full_name}
+                            </a>
+                        </div>
+                        <div class="description">{repo.description}</div>
+                        <div class="topics">
+                            {repo.topics?.map((topic: string) => (
+                                <span class="topic">{topic}</span>
+                            ))}
+                        </div>
+                        <div class="stats">
+                            <div class="stars">
+                                <Icon name="octicon:star-fill-16" />
+                                {repo.stargazers_count}
+                            </div>
+                            <div class="forks">
+                                <Icon name="octicon:repo-forked-16" />
+                                {repo.forks_count}
+                            </div>
+                            {repo.technologies && repo.technologies.length > 0 && (
+                                <>
+                                    <div class="spacer" />
+                                    <div class="technologies">
+                                        {repo.technologies.map(lang => {
+                                            const tech = technologies[lang]
+                                            if (!tech) {
+                                                throw new Error(`Technology ${lang} not found in technologies map`)
+                                            }
+
+                                            if (!tech.url) {
+                                                return (
+                                                    <Icon name={tech.icon} title={lang} style={{ color: tech.color }} />
+                                                )
+                                            }
+
+                                            return (
+                                                <a href={tech.url} target="_blank" rel="noopener noreferrer">
+                                                    <Icon name={tech.icon} title={lang} style={{ color: tech.color }} />
+                                                </a>
+                                            )
+                                        })}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                ))
+            }
+        </div>
+        <div class="text">
+            <p>
+                <a target="_blank" href="https://github.com/aziis98?tab=repositories">More...</a>
+            </p>
+        </div>
+
+        <h2>Featured PHC Projects</h2>
+        <div class="text">
+            <p>
+                Here are some of the projects I worked on and contributed to while at <a href="https://phc.dm.unipi.it/"
+                    >PHC</a
+                >. They are hosted on <a href="https://git.phc.dm.unipi.it/">our Gitea instance</a> we manage for the students
+                of the
+                <a href="https://www.dm.unipi.it/">Department of Mathematics</a> at the University of Pisa.
+            </p>
+        </div>
+        <div class="project-grid">
+            {
+                phcGiteaRepos.map(repo => (
+                    <div class="project-item">
+                        <div class="name">
+                            <Icon name="simple-icons:gitea" />
+                            <a href={repo.html_url} target="_blank" rel="noopener noreferrer">
+                                {repo.full_name}
+                            </a>
+                        </div>
+                        <div class="description">{repo.description}</div>
+                        <div class="stats">
+                            <div class="spacer" />
+                            <div class="technologies">
+                                {repo.technologies.map(lang => {
+                                    const tech = technologies[lang]
+                                    if (!tech) {
+                                        throw new Error(`Technology ${lang} not found in technologies map`)
+                                    }
+
+                                    if (!tech.url) {
+                                        return <Icon name={tech.icon} title={lang} style={{ color: tech.color }} />
+                                    }
+
+                                    return (
+                                        <a href={tech.url} target="_blank" rel="noopener noreferrer">
+                                            <Icon name={tech.icon} title={lang} style={{ color: tech.color }} />
+                                        </a>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                ))
+            }
+        </div>
+
+        <div class="text">
+            <p>
+                <a target="_blank" href="https://git.phc.dm.unipi.it/aziis98/">More...</a>
             </p>
         </div>
     </div>

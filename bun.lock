@@ -12,6 +12,9 @@
         "@fontsource-variable/outfit": "^5.2.6",
         "@fontsource-variable/source-code-pro": "^5.2.6",
         "@fontsource/iosevka": "^5.2.5",
+        "@iconify-json/octicon": "^1.2.9",
+        "@iconify-json/simple-icons": "^1.2.44",
+        "@iconify-json/vscode-icons": "^1.2.23",
         "astro": "^5.12.1",
         "astro-icon": "^1.1.5",
         "katex": "^0.16.22",
@@ -173,6 +176,12 @@
     "@fontsource-variable/source-code-pro": ["@fontsource-variable/source-code-pro@5.2.6", "", {}, "sha512-veMbS6Fa1GxIRYXzUOavQuB1QMclA5YGlOCq9IivbFQTl1fB40MJ5UsU/gX2Z5RwYB7Ez1Q4Bzy91aUrhPkL4g=="],
 
     "@fontsource/iosevka": ["@fontsource/iosevka@5.2.5", "", {}, "sha512-Zv/UHJodDug1LcnWv2u2+GPp3oWP3U6Xp16cJOsqqZQNsCu8sA/ttT331N0NypxBZ+7c8szlSRlYDcy9liZ8pw=="],
+
+    "@iconify-json/octicon": ["@iconify-json/octicon@1.2.9", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-8v4jxXCvN9GDKecnQRL49YtENFyHIlxaZE07RUSxxOTTnz++imYYPHf3gAEPu5BlP2ChZmsxR1dflD2Q9lOeqA=="],
+
+    "@iconify-json/simple-icons": ["@iconify-json/simple-icons@1.2.44", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-CdWgSPygwDlDbKtDWjvi3NtUefnkoepXv90n3dQxJerqzD9kI+nEJOiWUBM+eOyMYQKtxBpLWFBrgeotF0IZKw=="],
+
+    "@iconify-json/vscode-icons": ["@iconify-json/vscode-icons@1.2.23", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-gFTcKecKra2/b5SbGDgHGI/l8CuikHyBPmqGlK+YCmS8AK72dtDQbUekdoACsju/3TYS37QvdPoOQwnyx2LdYg=="],
 
     "@iconify/tools": ["@iconify/tools@4.1.2", "", { "dependencies": { "@iconify/types": "^2.0.0", "@iconify/utils": "^2.3.0", "@types/tar": "^6.1.13", "axios": "^1.8.3", "cheerio": "1.0.0", "domhandler": "^5.0.3", "extract-zip": "^2.0.1", "local-pkg": "^0.5.1", "pathe": "^1.1.2", "svgo": "^3.3.2", "tar": "^6.2.1" } }, "sha512-q6NzLQYEN9zkDfcyBqD3vItHcZw97w/s++3H3TBxUORr57EfHxj6tOW6fyufDjMq+Vl56WXWaPx1csBPYlI5CA=="],
 

@@ -17,34 +17,41 @@ const { procreate: procreateWorks, old: oldWorks } = await getArtCollections()
                 it for personal use, you can contact me to get the original high resolution images.
             </p>
             <p>
-                All images are shown with <code>object-fit: cover</code> to view them all nicely in the grid. To see the
-                full image, try hovering on it.
+                All images have <code>object-fit: cover</code> to display them all nicely in a grid. You can view the image
+                in its original aspect-ratio by hovering on it.
             </p>
-            <h2>Procreate ('23 &mdash; Now)</h2>
         </div>
-        <div class="art-grid">
+        <h2>Procreate ('23 &mdash; Now)</h2>
+        <div class="text">
+            <p>
+                Recently to take notes at uni I decided to buy a tablet and after some thought I ended up opting for an
+                iPad Air. I already knew <a href="https://procreate.com/">Procreate</a> existed and bought it right away
+                as an excuse to finally learn to draw but I discovered it is also pretty good for doing the art I like, the
+                main difference is that it is far more manual that what I would like from a procedural art software. On the
+                other hand being able to do precise edits on the art is nice for a change.
+            </p>
+        </div>
+        <div class="art-grid interactive">
             {
                 procreateWorks.map(({ path, module }) => (
-                    <div class="art-grid-item interactive">
-                        <Image
-                            src={module}
-                            alt={path}
-                            width={1920 / 2}
-                            height={1080 / 2}
-                            loading="lazy"
-                            decoding="async"
-                        />
-                    </div>
+                    <Image src={module} alt={path} width={1920 / 2} height={1080 / 2} loading="lazy" decoding="async" />
                 ))
             }
         </div>
+        <h2>Older Works (2015 &mdash; 2020)</h2>
         <div class="text">
-            <h2>Older Works (2015 &mdash; 2020)</h2>
+            <p>
+                These are some of the older works. The first program I used was <a href="https://www.getpaint.net/"
+                    >Paint.NET</a
+                >, this was a really great free Windows program I really miss now on Linux. Some stuff is made by hand
+                with Blender. Most line and geometric 2D art is made using PyGame.
+            </p>
         </div>
-        <div class="art-grid">
+        <div class="art-grid interactive">
             {
-                oldWorks.toReversed().map(({ path, module }) => (
-                    <div class="art-grid-item interactive">
+                oldWorks
+                    .toReversed()
+                    .map(({ path, module }) => (
                         <Image
                             src={module}
                             alt={path}
@@ -53,8 +60,7 @@ const { procreate: procreateWorks, old: oldWorks } = await getArtCollections()
                             loading="lazy"
                             decoding="async"
                         />
-                    </div>
-                ))
+                    ))
             }
         </div>
     </div>
