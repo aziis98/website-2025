@@ -326,7 +326,7 @@ const renderPixelart = (
             spawnLocation === 'left'
                 ? Math.floor(randomFloat(0, gridWidth * SIDE_SIZE))
                 : spawnLocation === 'right'
-                  ? Math.floor(randomFloat(gridWidth * (1.0 - SIDE_SIZE), gridWidth))
+                  ? Math.floor(randomFloat((gridWidth - 1) * (1.0 - SIDE_SIZE), gridWidth - 1))
                   : spawnLocation === 'center'
                     ? Math.floor(randomFloat(gridWidth * CENTER_SIZE, gridWidth * (1.0 - CENTER_SIZE)))
                     : Math.floor(randomFloat(0, gridWidth))
@@ -335,7 +335,7 @@ const renderPixelart = (
             spawnLocation === 'top'
                 ? Math.floor(randomFloat(0, gridHeight * SIDE_SIZE))
                 : spawnLocation === 'bottom'
-                  ? Math.floor(randomFloat(gridHeight * (1.0 - SIDE_SIZE), gridHeight))
+                  ? Math.floor(randomFloat((gridHeight - 1) * (1.0 - SIDE_SIZE), gridHeight - 1))
                   : spawnLocation === 'center'
                     ? Math.floor(randomFloat(gridHeight * CENTER_SIZE, gridHeight * (1.0 - CENTER_SIZE)))
                     : Math.floor(randomFloat(0, gridHeight))

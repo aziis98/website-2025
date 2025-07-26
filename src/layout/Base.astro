@@ -70,7 +70,7 @@ const { title } = Astro.props
             <PixelartPlantRect
                 client:visible
                 options={{
-                    cellColor: '#88888806',
+                    cellColor: '#66666606',
                     spawnLocation: 'top',
                 }}
             />
@@ -83,14 +83,15 @@ const { title } = Astro.props
         </header>
         <main>
             <nav class="sidebar">
-                <PixelartPlantRect
-                    client:load
-                    updateInterval={5}
-                    stopTimeout={5000}
-                    width={7 * 5}
-                    height={50 * 5}
-                    options={{ cellColor: 'hsl(266, 100%, 70%)', spawnLocation: 'bottom' }}
-                />
+                <div class="art-decoration">
+                    <PixelartPlantRect
+                        client:load
+                        updateInterval={5}
+                        stopTimeout={5000}
+                        width={7 * 5}
+                        options={{ cellColor: 'hsl(266, 100%, 70%)', spawnLocation: 'bottom' }}
+                    />
+                </div>
 
                 <a class="nav-item" href="/">Home</a>
 
@@ -102,14 +103,15 @@ const { title } = Astro.props
 
                 <a class="nav-item" href="/about">About</a>
 
-                <PixelartPlantRect
-                    client:load
-                    updateInterval={5}
-                    stopTimeout={5000}
-                    width={7 * 5}
-                    height={50 * 5}
-                    options={{ cellColor: 'hsl(266, 100%, 70%)', spawnLocation: 'top' }}
-                />
+                <div class="art-decoration">
+                    <PixelartPlantRect
+                        client:load
+                        updateInterval={5}
+                        stopTimeout={5000}
+                        width={7 * 5}
+                        options={{ cellColor: 'hsl(266, 100%, 70%)', spawnLocation: 'top' }}
+                    />
+                </div>
             </nav>
 
             <slot />

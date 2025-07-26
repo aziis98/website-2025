@@ -1,130 +1,114 @@
 ---
 import Base from '@/layout/Base.astro'
 import { PixelartPlantRect } from '@/components/preact/plant-pixelart'
+import { getPosts } from '@/tags'
+
+const posts = await getPosts()
+const recentPosts = posts
+    .filter(post => !post.data.draft)
+    // sort by .data.publish_date that is in format "YYYY/MM/DD"
+    .sort((a, b) => new Date(b.data.publish_date).getTime() - new Date(a.data.publish_date).getTime())
+    .slice(0, 3)
 ---
 
 <Base>
-    <h1 slot="header-title">Provaaaaa</h1>
-    <main class="content">
-        <p>
-            Lorem, ipsum dolor sit amet consectetur adipisicing elit. Praesentium maxime ad optio itaque dignissimos hic
-            blanditiis facilis sed! Eaque nihil aliquam deleniti eligendi eveniet dolores nulla, quas at voluptatibus
-            voluptatum quae repudiandae obcaecati. Molestiae voluptate, qui recusandae nam dolor perferendis excepturi,
-            reiciendis ipsum cumque, sapiente blanditiis quasi architecto illo fugiat?
-        </p>
-        <h2>Altro sottotitolo</h2>
-        <p>
-            Magni quos illum itaque nisi vitae accusamus provident veniam, quaerat eveniet omnis officiis laboriosam,
-            aliquam quas temporibus corporis eos mollitia ipsam? Iusto tempore dolore laudantium blanditiis, omnis
-            maxime nam optio quod accusamus doloribus totam. Iure recusandae, mollitia nulla doloremque neque ipsa
-            dolores similique distinctio. Obcaecati est beatae libero sunt inventore?
-        </p>
-        <h3>Altro sottotitolo</h3>
-        <p>
-            Necessitatibus amet at iure velit reprehenderit, placeat quibusdam accusantium harum, natus delectus,
-            corrupti consequatur fugit! Consequuntur, eaque reiciendis quibusdam consectetur ratione itaque perspiciatis
-            laudantium libero repellat error, officia cupiditate accusamus perferendis sunt inventore, magni animi nam
-            iusto ut laboriosam corporis voluptas commodi culpa? Pariatur ducimus doloremque ullam at culpa quaerat?
-        </p>
-        <h3>Altro sottotitolo</h3>
-        <p>
-            Asperiores sint odit saepe doloremque recusandae reiciendis repudiandae molestiae est dolores ipsum
-            exercitationem dolorum autem libero placeat, fugiat harum maiores eos pariatur impedit dicta explicabo!
-            Eveniet obcaecati ab tenetur exercitationem fugit iure deserunt aliquid neque expedita maxime in doloribus
-            id, a voluptate, quae aspernatur, nostrum labore ratione et! Rerum, harum?
-        </p>
-        <p>
-            Asperiores sint odit saepe doloremque recusandae reiciendis repudiandae molestiae est dolores ipsum
-            exercitationem dolorum autem libero placeat, fugiat harum maiores eos pariatur impedit dicta explicabo!
-            Eveniet obcaecati ab tenetur exercitationem fugit iure deserunt aliquid neque expedita maxime in doloribus
-            id, a voluptate, quae aspernatur, nostrum labore ratione et! Rerum, harum?
-        </p>
-        <p>
-            Asperiores sint odit saepe doloremque recusandae reiciendis repudiandae molestiae est dolores ipsum
-            exercitationem dolorum autem libero placeat, fugiat harum maiores eos pariatur impedit dicta explicabo!
-            Eveniet obcaecati ab tenetur exercitationem fugit iure deserunt aliquid neque expedita maxime in doloribus
-            id, a voluptate, quae aspernatur, nostrum labore ratione et! Rerum, harum?
-        </p>
-        <PixelartPlantRect client:visible height={100} />
-        <p>
-            Lorem, ipsum dolor sit amet consectetur adipisicing elit. Praesentium maxime ad optio itaque dignissimos hic
-            blanditiis facilis sed! Eaque nihil aliquam deleniti eligendi eveniet dolores nulla, quas at voluptatibus
-            voluptatum quae repudiandae obcaecati. Molestiae voluptate, qui recusandae nam dolor perferendis excepturi,
-            reiciendis ipsum cumque, sapiente blanditiis quasi architecto illo fugiat?
-        </p>
-        <h2>Altro sottotitolo</h2>
-        <p>
-            Magni quos illum itaque nisi vitae accusamus provident veniam, quaerat eveniet omnis officiis laboriosam,
-            aliquam quas temporibus corporis eos mollitia ipsam? Iusto tempore dolore laudantium blanditiis, omnis
-            maxime nam optio quod accusamus doloribus totam. Iure recusandae, mollitia nulla doloremque neque ipsa
-            dolores similique distinctio. Obcaecati est beatae libero sunt inventore?
-        </p>
-        <h3>Altro sottotitolo</h3>
-        <p>
-            Necessitatibus amet at iure velit reprehenderit, placeat quibusdam accusantium harum, natus delectus,
-            corrupti consequatur fugit! Consequuntur, eaque reiciendis quibusdam consectetur ratione itaque perspiciatis
-            laudantium libero repellat error, officia cupiditate accusamus perferendis sunt inventore, magni animi nam
-            iusto ut laboriosam corporis voluptas commodi culpa? Pariatur ducimus doloremque ullam at culpa quaerat?
-        </p>
-        <h3>Altro sottotitolo</h3>
-        <p>
-            Asperiores sint odit saepe doloremque recusandae reiciendis repudiandae molestiae est dolores ipsum
-            exercitationem dolorum autem libero placeat, fugiat harum maiores eos pariatur impedit dicta explicabo!
-            Eveniet obcaecati ab tenetur exercitationem fugit iure deserunt aliquid neque expedita maxime in doloribus
-            id, a voluptate, quae aspernatur, nostrum labore ratione et! Rerum, harum?
-        </p>
-        <p>
-            Asperiores sint odit saepe doloremque recusandae reiciendis repudiandae molestiae est dolores ipsum
-            exercitationem dolorum autem libero placeat, fugiat harum maiores eos pariatur impedit dicta explicabo!
-            Eveniet obcaecati ab tenetur exercitationem fugit iure deserunt aliquid neque expedita maxime in doloribus
-            id, a voluptate, quae aspernatur, nostrum labore ratione et! Rerum, harum?
-        </p>
-        <p>
-            Asperiores sint odit saepe doloremque recusandae reiciendis repudiandae molestiae est dolores ipsum
-            exercitationem dolorum autem libero placeat, fugiat harum maiores eos pariatur impedit dicta explicabo!
-            Eveniet obcaecati ab tenetur exercitationem fugit iure deserunt aliquid neque expedita maxime in doloribus
-            id, a voluptate, quae aspernatur, nostrum labore ratione et! Rerum, harum?
-        </p>
-        <PixelartPlantRect client:visible height={100} />
-        <p>
-            Lorem, ipsum dolor sit amet consectetur adipisicing elit. Praesentium maxime ad optio itaque dignissimos hic
-            blanditiis facilis sed! Eaque nihil aliquam deleniti eligendi eveniet dolores nulla, quas at voluptatibus
-            voluptatum quae repudiandae obcaecati. Molestiae voluptate, qui recusandae nam dolor perferendis excepturi,
-            reiciendis ipsum cumque, sapiente blanditiis quasi architecto illo fugiat?
-        </p>
-        <h2>Altro sottotitolo</h2>
-        <p>
-            Magni quos illum itaque nisi vitae accusamus provident veniam, quaerat eveniet omnis officiis laboriosam,
-            aliquam quas temporibus corporis eos mollitia ipsam? Iusto tempore dolore laudantium blanditiis, omnis
-            maxime nam optio quod accusamus doloribus totam. Iure recusandae, mollitia nulla doloremque neque ipsa
-            dolores similique distinctio. Obcaecati est beatae libero sunt inventore?
-        </p>
-        <h3>Altro sottotitolo</h3>
-        <p>
-            Necessitatibus amet at iure velit reprehenderit, placeat quibusdam accusantium harum, natus delectus,
-            corrupti consequatur fugit! Consequuntur, eaque reiciendis quibusdam consectetur ratione itaque perspiciatis
-            laudantium libero repellat error, officia cupiditate accusamus perferendis sunt inventore, magni animi nam
-            iusto ut laboriosam corporis voluptas commodi culpa? Pariatur ducimus doloremque ullam at culpa quaerat?
-        </p>
-        <h3>Altro sottotitolo</h3>
-        <p>
-            Asperiores sint odit saepe doloremque recusandae reiciendis repudiandae molestiae est dolores ipsum
-            exercitationem dolorum autem libero placeat, fugiat harum maiores eos pariatur impedit dicta explicabo!
-            Eveniet obcaecati ab tenetur exercitationem fugit iure deserunt aliquid neque expedita maxime in doloribus
-            id, a voluptate, quae aspernatur, nostrum labore ratione et! Rerum, harum?
-        </p>
-        <p>
-            Asperiores sint odit saepe doloremque recusandae reiciendis repudiandae molestiae est dolores ipsum
-            exercitationem dolorum autem libero placeat, fugiat harum maiores eos pariatur impedit dicta explicabo!
-            Eveniet obcaecati ab tenetur exercitationem fugit iure deserunt aliquid neque expedita maxime in doloribus
-            id, a voluptate, quae aspernatur, nostrum labore ratione et! Rerum, harum?
-        </p>
-        <p>
-            Asperiores sint odit saepe doloremque recusandae reiciendis repudiandae molestiae est dolores ipsum
-            exercitationem dolorum autem libero placeat, fugiat harum maiores eos pariatur impedit dicta explicabo!
-            Eveniet obcaecati ab tenetur exercitationem fugit iure deserunt aliquid neque expedita maxime in doloribus
-            id, a voluptate, quae aspernatur, nostrum labore ratione et! Rerum, harum?
-        </p>
+    <h1 slot="header-title">Website</h1>
+    <main class="content wide">
+        <div class="text">
+            <h2>
+                <a href="/blog">Blog</a>
+            </h2>
+            <p>
+                Here I talk about random stuff I work on from my Maths studies, tech talks I gave with GDG Pisa or other
+                groups in Pisa. Or even random little side projects.
+            </p>
+        </div>
+        <h3>Recent Posts</h3>
+        <div class="blog-grid">
+            {
+                recentPosts.map(post => (
+                    <a class="blog-item" href={`/blog/${post.id}`}>
+                        <div class="title">{post.data.title}</div>
+                        <div class="description">{post.data.description}</div>
+                        <div class="tags">
+                            {post.data.tags.map(tag => (
+                                <span class="tag">{tag}</span>
+                            ))}
+                        </div>
+                    </a>
+                ))
+            }
+        </div>
+        <div class="art-separator" style="width: 80ch; margin: 3rem 0 2.25rem;">
+            <PixelartPlantRect
+                client:visible
+                updateInterval={10}
+                stopTimeout={5000}
+                height={5 * 10}
+                options={{ cellColor: 'hsl(266, 100%, 70%)', spawnLocation: 'top' }}
+            />
+        </div>
+
+        <div class="text">
+            <h2>
+                <a href="/art">Art</a>
+            </h2>
+            <p>Sometimes I also so some procedural art stuff as you can see from this shiny new website design.</p>
+        </div>
+        <h3>Main works</h3>
+        <div class="blog-grid">
+            {
+                recentPosts.map(post => (
+                    <a class="blog-item" href={`/blog/${post.id}`}>
+                        <div class="title">{post.data.title}</div>
+                        <div class="description">{post.data.description}</div>
+                        <div class="tags">
+                            {post.data.tags.map(tag => (
+                                <span class="tag">{tag}</span>
+                            ))}
+                        </div>
+                    </a>
+                ))
+            }
+        </div>
+        <div class="art-separator" style="width: 80ch; margin: 3rem 0 2.25rem;">
+            <PixelartPlantRect
+                client:visible
+                updateInterval={10}
+                stopTimeout={5000}
+                height={5 * 10}
+                options={{ cellColor: 'hsl(266, 100%, 70%)', spawnLocation: 'top' }}
+            />
+        </div>
+
+        <div class="text">
+            <h2>
+                <a href="/projects">Projects</a>
+            </h2>
+            <p>
+                <!-- This <a href="/projects">/projects</a> section is for stuff I have worked on or I am still actively building. -->
+                <!-- Older projects here are considered mostly finished. -->
+
+                Here I collect some of the projects I have worked on or I am still actively building. Some of them are
+                also open source and you can find them on my <a href="https://github.com/aziis98">GitHub</a> or on the PHC
+                <a href="https://git.phc.dm.unipi.it/aziis98">Gitea</a> instance.
+            </p>
+        </div>
+        <div class="blog-grid">
+            {
+                recentPosts.map(post => (
+                    <a class="blog-item" href={`/blog/${post.id}`}>
+                        <div class="title">{post.data.title}</div>
+                        <div class="description">{post.data.description}</div>
+                        <div class="tags">
+                            {post.data.tags.map(tag => (
+                                <span class="tag">{tag}</span>
+                            ))}
+                        </div>
+                    </a>
+                ))
+            }
+        </div>
     </main>
 
     <!-- <div class="art" style="width: 100%; max-width: 52rem; height: 4rem;">

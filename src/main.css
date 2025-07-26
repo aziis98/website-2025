@@ -61,7 +61,7 @@
         color: var(--text-fg, #333);
         font-family: var(--font-base);
 
-        background: #303030;
+        background: #282828;
 
         font-size: 18px;
         line-height: 1.75;
@@ -171,6 +171,10 @@
     }
 
     .text {
+        > p {
+            max-width: 80ch;
+        }
+
         a {
             color: hsl(from var(--accent) h s 65%);
             text-decoration: none;
@@ -335,7 +339,7 @@
             grid-auto-flow: dense;
 
             padding: 0 1rem var(--main-gap) 1rem;
-            background: #333;
+            background: #282828;
 
             position: relative;
 
@@ -345,8 +349,8 @@
                 top: 0;
                 left: 0;
                 right: 0;
-                height: 15px;
-                background: linear-gradient(to bottom, #303030, transparent);
+                height: 0.5rem;
+                background: linear-gradient(to bottom, #0003, transparent);
             }
 
             &::after {
@@ -415,11 +419,16 @@
                 padding: calc(var(--main-gap) + 0.25rem) var(--main-gap) 0 0;
 
                 justify-self: end;
+
+                > .art-decoration {
+                    justify-self: end;
+                    height: calc(round(25vh, 10px) + 5px);
+                }
             }
 
             > .content {
                 grid-column: 2 / 3;
-                padding: 1.15rem 0 6rem;
+                padding: 1.15rem 0 13rem;
                 min-width: 0;
 
                 &.wide {
@@ -429,7 +438,7 @@
                 @media screen and (width <= 600px) {
                     &,
                     &.wide {
-                        padding: 1rem 1rem 6rem;
+                        padding: 1rem 1rem 13rem;
                     }
                 }
             }
@@ -502,10 +511,6 @@
 
         justify-content: end;
 
-        .pixelart-plant-art {
-            justify-self: end;
-        }
-
         .nav-item {
             font-family: var(--font-base);
             font-weight: 600;
@@ -577,7 +582,7 @@
 
     .blog-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(20rem, auto));
+        grid-template-columns: repeat(auto-fill, minmax(21rem, auto));
         gap: 1rem;
 
         .blog-item {
