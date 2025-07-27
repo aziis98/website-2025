@@ -1,0 +1,86 @@
+---
+import { getTechnology, type TechnologyDetail } from '@/projects'
+import { Icon } from 'astro-icon/components'
+
+type Props = {
+    html_url: string
+    full_name: string
+    description: string
+    topics?: string[]
+    stargazers_count?: number
+    forks_count?: number
+    technologies?: string[]
+}
+
+const { html_url, full_name, description, topics, stargazers_count, forks_count, technologies } = Astro.props
+---
+
+<div class="project-item">
+    <div class="name">
+        {
+            html_url.startsWith('https://github.com/') ? (
+                <Icon name="octicon:repo-16" />
+            ) : html_url.startsWith('https://git.phc.dm.unipi.it/') ? (
+                <Icon name="simple-icons:gitea" />
+            ) : (
+                <Icon name="simple-icons:link" />
+            )
+        }
+        <a href={html_url} target="_blank" rel="noopener noreferrer">
+            {full_name}
+        </a>
+    </div>
+    <div class="description">{description}</div>
+    <div class="topics">
+        {topics?.map((topic: string) => <span class="topic">{topic}</span>)}
+    </div>
+    <div class="stats">
+        {
+            stargazers_count !== undefined && stargazers_count > 0 && (
+                <div class="stars">
+                    <Icon name="octicon:star-fill-16" />
+                    {stargazers_count}
+                </div>
+            )
+        }
+        {
+            forks_count !== undefined && forks_count > 0 && (
+                <div class="forks">
+                    <Icon name="octicon:repo-forked-16" />
+                    {forks_count}
+                </div>
+            )
+        }
+        {
+            technologies && technologies.length > 0 && (
+                <>
+                    <div class="spacer" />
+                    <div class="technologies">
+                        {(
+                            await Promise.all(
+                                technologies.map(
+                                    async (techId: string) =>
+                                        [techId, await getTechnology(techId)] as [string, TechnologyDetail],
+                                ),
+                            )
+                        ).map(([techId, tech]) => {
+                            if (!tech) {
+                                throw new Error(`Technology ${techId} not found in technologies map`)
+                            }
+
+                            if (!tech.url) {
+                                return <Icon name={tech.icon} title={techId} style={{ color: tech.color }} />
+                            }
+
+                            return (
+                                <a href={tech.url} target="_blank" rel="noopener noreferrer">
+                                    <Icon name={tech.icon} title={techId} style={{ color: tech.color }} />
+                                </a>
+                            )
+                        })}
+                    </div>
+                </>
+            )
+        }
+    </div>
+</div>

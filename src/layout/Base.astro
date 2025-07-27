@@ -9,6 +9,7 @@ import 'katex/dist/katex.min.css'
 
 import '@/main.css'
 import { PixelartPlantRect } from '@/components/preact/plant-pixelart'
+import { Icon } from 'astro-icon/components'
 
 type Props = {
     title?: string | string[]
@@ -65,6 +66,8 @@ const { title } = Astro.props
         <title>{['aziis98', title ?? []].flat().reverse().join(' | ')}</title>
     </head>
     <body>
+        <input type="checkbox" id="mobile-sidebar-menu" autocomplete="off" />
+
         <header>
             <!-- Header Art -->
             <PixelartPlantRect
@@ -74,6 +77,11 @@ const { title } = Astro.props
                     spawnLocation: 'top',
                 }}
             />
+
+            <label class="mobile-menu" for="mobile-sidebar-menu">
+                <Icon class="mobile-sidebar-menu-close" name="octicon:sidebar-collapse-16" size={24} />
+                <Icon class="mobile-sidebar-menu-open" name="octicon:sidebar-expand-16" size={24} />
+            </label>
 
             <a class="logo" href="/">aziis98</a>
 

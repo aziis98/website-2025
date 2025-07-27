@@ -5,6 +5,8 @@ import { getPosts } from '@/tags'
 import { getArtCollections } from '@/art'
 import { Image } from 'astro:assets'
 import { Icon } from 'astro-icon/components'
+import ProjectCard from '@/components/astro/ProjectCard.astro'
+import { getProject } from '@/projects'
 
 const posts = await getPosts()
 const recentPosts = posts
@@ -18,10 +20,12 @@ const recentArtWorks = procreateWorks.slice(0, 3)
 ---
 
 <Base>
-    <h1 slot="header-title">Website</h1>
+    <h1 slot="header-title">Homepage</h1>
     <main class="content wide">
         <div class="text">
             <h2>About</h2>
+
+            <img class="profile-picture" src="/profile.png" alt="" />
 
             <p>Hi! I'm Antonio De&nbsp;Lucreziis (on the web I go by <a href="https://aziis98.com">@aziis98</a>).</p>
             <p>
@@ -39,10 +43,11 @@ const recentArtWorks = procreateWorks.slice(0, 3)
         </div>
 
         <div style="display: flex; align-items: center; gap: 1rem;">
-            <strong>Socials:</strong>
+            <strong>Socials</strong>
 
             <a style="display: grid;" target="_blank" href="https://github.com/aziis98" title="GitHub profile">
                 <img src="https://github.com/favicon.ico" alt="GitHub" width="24" height="24" />
+                <!-- <Icon name="simple-icons:github" size={24} style={{ color: '#333' }} /> -->
             </a>
             <a
                 style="display: grid;"
@@ -51,9 +56,11 @@ const recentArtWorks = procreateWorks.slice(0, 3)
                 title="HackerNews profile"
             >
                 <img src="https://news.ycombinator.com/favicon.ico" alt="HackerNews" width="24" height="24" />
+                <!-- <Icon name="simple-icons:ycombinator" size={24} style={{ color: '#333' }} /> -->
             </a>
             <a style="display: grid;" target="_blank" href="https://lobste.rs/~aziis98" title="Lobsters profile">
                 <img src="https://lobste.rs/favicon.ico" alt="Lobsters" width="24" height="24" />
+                <!-- <Icon name="simple-icons:lobsters" size={24} style={{ color: '#333' }} /> -->
             </a>
             <a
                 style="display: grid;"
@@ -67,6 +74,8 @@ const recentArtWorks = procreateWorks.slice(0, 3)
                     width="24"
                     height="24"
                 />
+
+                <!-- <Icon name="simple-icons:instagram" size={24} style={{ color: '#333' }} /> -->
             </a>
         </div>
 
@@ -163,20 +172,12 @@ const recentArtWorks = procreateWorks.slice(0, 3)
             </p>
         </div>
         <h3>Featured Projects</h3>
-        <div class="blog-grid">
-            {
-                recentPosts.map(post => (
-                    <a class="blog-item" href={`/blog/${post.id}`}>
-                        <div class="title">{post.data.title}</div>
-                        <div class="description">{post.data.description}</div>
-                        <div class="tags">
-                            {post.data.tags.map(tag => (
-                                <span class="tag">{tag}</span>
-                            ))}
-                        </div>
-                    </a>
-                ))
-            }
+        <div class="project-grid">
+            <ProjectCard {...await getProject('gdgpisa/devfest-2025')} />
+            <ProjectCard {...await getProject('aziis98/kauffman-polynomial')} />
+            <ProjectCard {...await getProject('aziis98/mup')} />
+            <ProjectCard {...await getProject('phc/website')} />
+            <ProjectCard {...await getProject('phc/orario')} />
         </div>
     </main>
 </Base>

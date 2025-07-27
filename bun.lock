@@ -12,6 +12,7 @@
         "@fontsource-variable/outfit": "^5.2.6",
         "@fontsource-variable/source-code-pro": "^5.2.6",
         "@fontsource/iosevka": "^5.2.5",
+        "@iconify-json/logos": "^1.2.5",
         "@iconify-json/octicon": "^1.2.9",
         "@iconify-json/simple-icons": "^1.2.44",
         "@iconify-json/vscode-icons": "^1.2.23",
@@ -176,6 +177,8 @@
     "@fontsource-variable/source-code-pro": ["@fontsource-variable/source-code-pro@5.2.6", "", {}, "sha512-veMbS6Fa1GxIRYXzUOavQuB1QMclA5YGlOCq9IivbFQTl1fB40MJ5UsU/gX2Z5RwYB7Ez1Q4Bzy91aUrhPkL4g=="],
 
     "@fontsource/iosevka": ["@fontsource/iosevka@5.2.5", "", {}, "sha512-Zv/UHJodDug1LcnWv2u2+GPp3oWP3U6Xp16cJOsqqZQNsCu8sA/ttT331N0NypxBZ+7c8szlSRlYDcy9liZ8pw=="],
+
+    "@iconify-json/logos": ["@iconify-json/logos@1.2.5", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-WR8+9kFwx1tIR+hWpKYC+rpVkAuzHyaVxZRfhGGIjqCfgbodK7rS4+OZhktdKtZKKcdmhpLZKvlmRm4IA4dKRg=="],
 
     "@iconify-json/octicon": ["@iconify-json/octicon@1.2.9", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-8v4jxXCvN9GDKecnQRL49YtENFyHIlxaZE07RUSxxOTTnz++imYYPHf3gAEPu5BlP2ChZmsxR1dflD2Q9lOeqA=="],
 
