@@ -235,6 +235,34 @@
         .katex-display > .katex {
             font-size: 1.4em !important;
         }
+
+        iframe {
+            margin: 1rem auto;
+            display: block;
+
+            width: 30rem;
+            height: 20rem;
+            max-width: 100%;
+
+            border-radius: 0.5rem;
+            box-shadow: var(--card-shadow);
+
+            @media screen and (width <= 600px) {
+                max-height: 15rem;
+            }
+        }
+
+        .post-thumbnail {
+            display: block;
+            margin: 1rem auto;
+
+            width: auto;
+
+            border-radius: 0.5rem;
+            box-shadow: var(--card-shadow);
+
+            padding: 0 1rem;
+        }
     }
 
     pre,

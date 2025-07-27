@@ -26,6 +26,18 @@ const { Content } = await render(post)
 <Base title={['Blog', post.data.title]} description={post.data.description} thumbnail={post.data.thumbnail}>
     <h1 slot="header-title">{post.data.title}</h1>
     <div class="content text">
+        {
+            post.data.thumbnail && (
+                <a href={post.data.thumbnail_url}>
+                    <img
+                        class="post-thumbnail"
+                        src={post.data.thumbnail}
+                        alt={post.data.thumbnail_alt || post.data.title}
+                    />
+                </a>
+            )
+        }
+
         <Content />
     </div>
 </Base>
