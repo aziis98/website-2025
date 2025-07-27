@@ -3,6 +3,10 @@ title: NeXTStep Presentation from Steve Jobs
 description: I saw an awesome presentation of the NeXTStep system from Steve Jobs and have some ideas about it
 tags: ['os', 'presentation', 'nextstep', 'interactivity']
 publish_date: 2023/09/01
+thumbnail: '/data/thumbnails/nextstep-steve-jobs-video.jpg'
+thumbnail_alt: 'Steve Jobs presenting NeXTStep'
+thumbnail_url: 'https://youtu.be/rf5o5liZxnA?si=FuIHKRIfyxhqWDLv&t=1119'
+thumbnail_visible: false
 ---
 
 Recently I saw this video presentation on YouTube of the [NeXTStep](https://en.wikipedia.org/wiki/NeXTSTEP) system by Steve Jobs, the quality is what it is but he shows many cool things.
