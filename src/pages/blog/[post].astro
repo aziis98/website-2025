@@ -23,7 +23,7 @@ const { post } = Astro.props
 const { Content } = await render(post)
 ---
 
-<Base>
+<Base title={['Blog', post.data.title]} description={post.data.description} thumbnail={post.data.thumbnail}>
     <h1 slot="header-title">{post.data.title}</h1>
     <div class="content text">
         <Content />

@@ -13,6 +13,10 @@ const blog = defineCollection({
         publish_date: z.string().regex(/^\d{4}\/\d{2}\/\d{2}$/, 'Publish date must be in YYYY/MM/DD format'),
         image: z.string().optional(),
         draft: z.boolean().default(false),
+
+        thumbnail: z.string().optional(),
+        thumbnail_alt: z.string().optional(),
+        thumbnail_url: z.string().optional(),
     }),
 })
 

@@ -19,11 +19,11 @@ const { html_url, full_name, description, topics, stargazers_count, forks_count,
     <div class="name">
         {
             html_url.startsWith('https://github.com/') ? (
-                <Icon name="octicon:repo-16" />
+                <Icon title="GitHub Repo" name="octicon:repo-16" />
             ) : html_url.startsWith('https://git.phc.dm.unipi.it/') ? (
-                <Icon name="simple-icons:gitea" />
+                <Icon title="Gitea Repo" name="simple-icons:gitea" />
             ) : (
-                <Icon name="simple-icons:link" />
+                <Icon title="Other Repo" name="simple-icons:link" />
             )
         }
         <a href={html_url} target="_blank" rel="noopener noreferrer">

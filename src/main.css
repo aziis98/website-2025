@@ -837,6 +837,12 @@
                 a {
                     display: grid;
                     align-items: center;
+
+                    color: #333;
+
+                    &:hover {
+                        text-decoration: underline;
+                    }
                 }
             }
 
