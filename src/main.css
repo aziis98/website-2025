@@ -976,8 +976,8 @@
     .profile-picture {
         float: left;
 
-        width: 5.5rem;
-        margin: 1rem 1rem 1rem 0;
+        width: 6rem;
+        margin: 1rem 1rem 0.5rem 0;
         border-radius: 6rem;
 
         box-shadow: var(--card-shadow);
