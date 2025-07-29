@@ -554,7 +554,7 @@
             > main {
                 > .sidebar {
                     display: grid;
-                    grid-template-rows: 200px repeat(4, auto) 200px;
+                    grid-template-rows: 150px repeat(5, auto) 150px;
 
                     place-self: stretch;
                     align-content: center;
@@ -629,6 +629,7 @@
         justify-self: end;
 
         justify-content: end;
+        justify-items: end;
 
         .nav-item {
             font-family: var(--font-base);
@@ -1103,6 +1104,18 @@
 
             > .info {
                 font-size: 16px;
+            }
+        }
+
+        @media screen and (width <= 600px) {
+            --notebook-size: 12rem;
+
+            .notebook-item {
+                padding-left: 1rem;
+
+                &.larger {
+                    --notebook-size: 12.75rem;
+                }
             }
         }
     }
