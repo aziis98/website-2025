@@ -5,7 +5,7 @@ import { Icon } from 'astro-icon/components'
 type Props = {
     html_url: string
     full_name: string
-    description: string
+    description?: string
     topics?: string[]
     stargazers_count?: number
     forks_count?: number
@@ -30,7 +30,11 @@ const { html_url, full_name, description, topics, stargazers_count, forks_count,
             {full_name}
         </a>
     </div>
-    <div class="description">{description}</div>
+    <div class="description">
+        <slot name="description">
+            {description}
+        </slot>
+    </div>
     <div class="topics">
         {topics?.map((topic: string) => <span class="topic">{topic}</span>)}
     </div>

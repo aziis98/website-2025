@@ -1,0 +1,96 @@
+---
+import ProjectCard from '@/components/astro/ProjectCard.astro'
+import Base from '@/layout/Base.astro'
+import { getProject } from '@/projects'
+---
+
+<Base title={'Academia'}>
+    <h1 slot="header-title">Academia</h1>
+    <div class="content wide">
+        <div class="text">
+            <p>For now this section mostly contains university course notes and some recent projects.</p>
+        </div>
+
+        <h2>Thesis and Reports</h2>
+        <div class="notebook-grid">
+            <a href="/academia/geometria-2" class="notebook-item larger" style="--notebook-color: rgb(224, 178, 255);">
+                <div class="title">Bachelor Thesis</div>
+                <div class="info">2024/2025</div>
+                <div class="info">Tesi Triennale</div>
+            </a>
+            <a href="/academia/geometria-2" class="notebook-item" style="--notebook-color: rgb(78, 212, 89);">
+                <div class="title">Kauffman Polynomial Implementation</div>
+                <div class="info">June 2025</div>
+                <div class="info">Computational Laboratory Report</div>
+            </a>
+            <a href="/academia/geometria-2" class="notebook-item" style="--notebook-color: rgb(78, 136, 212);">
+                <div class="title">Arnoldi Iteration</div>
+                <div class="info">April 2025</div>
+                <div class="info">Scientific Computing Report</div>
+            </a>
+        </div>
+
+        <h2>University Notes</h2>
+        <div class="text">
+            <p>
+                For now all notes except for <em>Knot Theory (coming soon)</em>
+                are written in 🇮🇹 Italian as the courses were in that language.
+            </p>
+        </div>
+        <div class="notebook-grid">
+            <a href="/academia/geometria-2" class="notebook-item" style="--notebook-color: #808081;">
+                <div class="title">Geometria 2</div>
+                <div class="info">2019/2020</div>
+            </a>
+            <a href="/academia/geometria-2" class="notebook-item" style="--notebook-color: green;">
+                <div class="title">Geometria 2</div>
+                <div class="info">2019/2020</div>
+            </a>
+            <a href="/academia/geometria-2" class="notebook-item" style="--notebook-color: rgb(255, 208, 0);">
+                <div class="title">Geometria 2</div>
+                <div class="info">2019/2020</div>
+            </a>
+            <a href="/academia/geometria-2" class="notebook-item" style="--notebook-color: #6b3f1b;">
+                <div class="title">Geometria 2</div>
+                <div class="info">2019/2020</div>
+            </a>
+        </div>
+
+        <h2>University Projects</h2>
+        <div class="text">
+            <p>Here are some course projects I did while at the University of Pisa.</p>
+        </div>
+        <div class="project-grid">
+            <ProjectCard {...await getProject('aziis98/kauffman-polynomial')}>
+                <Fragment slot="description">
+                    <strong>Computational Laboratory</strong>: Implementation of the knot theory Kauffman polynomial
+                    regular isotopy invariant in Python
+                </Fragment>
+            </ProjectCard>
+            <ProjectCard {...await getProject('aziis98/asd-2024')}>
+                <Fragment slot="description">
+                    <strong>Algorithms and Data Structures</strong>: pangenome graphs, gfa parsing, analysis and
+                    visualization
+                </Fragment>
+            </ProjectCard>
+            <ProjectCard {...await getProject('aziis98/arnoldi-distribuito')}>
+                <Fragment slot="description">
+                    <strong>
+                        Scientific Computing &plus;
+                        <a target="_blank" href="https://git.phc.dm.unipi.it/HighPerformanceMathematics/HPM-Lezioni2024"
+                            >HPC</a
+                        >
+                    </strong>: Distributed Arnoldi Iteration for Eigenvalues with PETSc in C on a cluster of ~30
+                    <a target="_blank" href="https://radxa.com/products/rock4/">aarch64</a>
+                    nodes
+                </Fragment>
+            </ProjectCard>
+        </div>
+
+        <div class="text">
+            <p>
+                <a target="_blank" href="https://git.phc.dm.unipi.it/aziis98/">More...</a>
+            </p>
+        </div>
+    </div>
+</Base>
