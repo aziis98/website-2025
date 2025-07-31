@@ -182,6 +182,19 @@
                 color: hsl(from var(--accent) h s 50%);
                 text-decoration: underline solid hsl(from var(--accent) h s 60%) 2px;
             }
+
+            &:is([href^='https://static.aziis98.com'])
+            {
+                color: #d00;
+                text-decoration: line-through solid #d00;
+
+                pointer-events: none;
+
+                &::after {
+                    content: ' (temporarily unavailable)';
+                    color: #d00;
+                }
+            }
         }
 
         strong {
@@ -340,7 +353,7 @@
         display: grid;
 
         grid-template-columns: 1fr minmax(auto, 80ch) 1fr;
-        grid-template-rows: auto auto;
+        grid-template-rows: auto 1fr;
 
         --main-gap: 1.5rem;
 
@@ -366,6 +379,8 @@
 
         > header {
             display: grid;
+
+            align-self: start;
 
             grid-column: 1 / -1;
             grid-template-columns: subgrid;
@@ -455,6 +470,10 @@
 
             background: #fff;
 
+            padding-bottom: 2rem;
+
+            min-height: 100vh;
+
             > .sidebar {
                 /* the + 0.25rem is a correction to match the text-top line of the art and the text */
                 padding: calc(var(--main-gap) + 0.25rem) var(--main-gap) 0 0;
@@ -469,7 +488,7 @@
 
             > .content {
                 grid-column: 2 / 3;
-                padding: 1.15rem 0 12rem;
+                padding: 1.15rem 0 10rem;
                 min-width: 0;
 
                 &.wide {
@@ -479,7 +498,7 @@
                 @media screen and (width <= 600px) {
                     &,
                     &.wide {
-                        padding: 1rem 1rem 12rem;
+                        padding: 1rem 1rem 10rem;
                     }
                 }
             }
@@ -1006,6 +1025,7 @@
             color: inherit;
 
             padding: 0.5rem 1.25rem;
+            padding-right: 1.5rem;
 
             position: relative;
 
@@ -1014,7 +1034,7 @@
 
             line-height: 1.25;
 
-            color: oklch(from var(--notebook-color, gray) 20% c h);
+            color: oklch(from var(--notebook-color, gray) calc(l - 0.6) c h);
             background: #fff;
 
             border-top-right-radius: 0.75rem;
@@ -1045,10 +1065,10 @@
 
                 background: linear-gradient(
                     calc(180deg - 30deg),
-                    oklch(from var(--notebook-color, gray) 70% calc(c + 0.03) h),
-                    oklch(from var(--notebook-color, gray) 60% calc(c + 0.03) h)
+                    oklch(from var(--notebook-color, gray) calc(l + 0.05) calc(c + 0.03) h),
+                    oklch(from var(--notebook-color, gray) calc(l - 0.1) calc(c + 0.03) h)
                 );
-                border: 2px solid oklch(from var(--notebook-color, gray) 60% c h);
+                border: 2px solid oklch(from var(--notebook-color, gray) calc(l - 0.1) c h);
                 border-left: none;
 
                 border-top-right-radius: 0.75rem;
@@ -1071,8 +1091,8 @@
 
                 background: linear-gradient(
                     calc(180deg - 10deg),
-                    oklch(from var(--notebook-color, gray) 30% c h),
-                    oklch(from var(--notebook-color, gray) 15% c h)
+                    oklch(from var(--notebook-color, gray) calc(l - 0.4) c h),
+                    oklch(from var(--notebook-color, gray) calc(l - 0.5) c h)
                 );
                 border: 1px solid oklch(from var(--notebook-color, gray) 20% c h);
 
@@ -1108,13 +1128,23 @@
         }
 
         @media screen and (width <= 600px) {
-            --notebook-size: 12rem;
+            --notebook-size: 9.5rem;
 
             .notebook-item {
                 padding-left: 1rem;
+                gap: 0.5rem;
 
                 &.larger {
-                    --notebook-size: 12.75rem;
+                    --notebook-size: 11rem;
+                }
+
+                > .title {
+                    font-size: 17px;
+                }
+
+                > .info {
+                    font-size: 14px;
+                    letter-spacing: 0.5px;
                 }
             }
         }

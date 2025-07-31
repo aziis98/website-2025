@@ -1,0 +1,109 @@
+# .github/workflows/screenshot.yml
+name: Website Screenshot with Puppeteer
+
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'URL of the website to screenshot (e.g., https://www.google.com)'
+        required: true
+        default: 'https://www.google.com'
+      filename:
+        description: 'Name of the screenshot file (e.g., my_website.png)'
+        required: false
+        default: 'screenshot.png'
+
+jobs:
+  screenshot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Use a recent LTS version
+
+      - name: Install Puppeteer and dependencies
+        run: |
+          npm install puppeteer
+          # Install necessary system dependencies for Puppeteer's Chromium
+          sudo apt-get update
+          sudo apt-get install -yq gconf-service libasound2 libatk1.0-0 libcairo2 libcups2 libfontconfig1 libgdk-pixbuf2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libxss1 libappindicator1 libnss3 lsb-release xdg-utils
+
+      - name: Run Puppeteer screenshot script
+        # The JavaScript code for taking the screenshot is now embedded directly here.
+        # It writes the script to a temporary file and then executes it using Node.js.
+        run: |
+          cat <<EOF > screenshot_temp_script.js
+          const puppeteer = require('puppeteer');
+
+          async function takeScreenshot(url, filename) {
+            if (!url) {
+              console.error('Error: No URL provided.');
+              process.exit(1);
+            }
+
+            console.log(\`Attempting to screenshot: \${url}\`);
+            console.log(\`Saving to file: \${filename}\`);
+
+            let browser;
+            try {
+              // Launch a headless Chromium browser instance
+              // headless: 'new' uses the new headless mode which is more stable
+              browser = await puppeteer.launch({
+                headless: 'new',
+                args: [
+                  '--no-sandbox', // Required for GitHub Actions environments
+                  '--disable-setuid-sandbox',
+                  '--disable-dev-shm-usage', // Overcomes limited resource problems
+                  '--disable-accelerated-2d-canvas',
+                  '--no-first-run',
+                  '--no-zygote',
+                  '--single-process', // Use if encountering issues with multiple processes
+                  '--disable-gpu' // Recommended for headless environments
+                ]
+              });
+
+              const page = await browser.newPage();
+
+              // Set a consistent viewport size
+              await page.setViewport({ width: 1920, height: 1080 });
+
+              // Navigate to the URL
+              // waitUntil: 'networkidle0' waits until there are no more than 0 network connections for at least 500 ms.
+              // This helps ensure all page resources are loaded.
+              await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 }); // 60 seconds timeout
+
+              // Take a full-page screenshot
+              await page.screenshot({ path: filename, fullPage: true });
+
+              console.log(\`Screenshot saved successfully to \${filename}\`);
+            } catch (error) {
+              console.error(\`Error taking screenshot for \${url}: \`, error);
+              process.exit(1); // Exit with a non-zero code to indicate failure
+            } finally {
+              if (browser) {
+                await browser.close();
+              }
+            }
+          }
+
+          // Get URL and filename from environment variables
+          takeScreenshot(process.env.TARGET_URL, process.env.OUTPUT_FILENAME);
+          EOF
+          node screenshot_temp_script.js
+        env:
+          TARGET_URL: ${{ github.event.inputs.url }}
+          OUTPUT_FILENAME: ${{ github.event.inputs.filename }}
+          PUPPETEER_TIMEOUT: 60000 # 60 seconds
+
+      - name: Upload screenshot artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: website-screenshot-${{ github.run_id }}
+          path: ${{ github.event.inputs.filename }}
+          retention-days: 0 # Keep the artifact forever
