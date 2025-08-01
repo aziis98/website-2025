@@ -43,7 +43,7 @@ jobs:
         # It writes the script to a temporary file and then executes it using Node.js.
         run: |
           cat <<EOF > screenshot_temp_script.js
-          const puppeteer = require('puppeteer');
+          import puppeteer from 'puppeteer'
 
           async function takeScreenshot(url, filename) {
             if (!url) {
