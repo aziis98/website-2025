@@ -140,8 +140,6 @@
     ol {
         padding-left: 1.5rem;
 
-        line-height: 1.5;
-
         li {
             p {
                 margin: 0.5rem 0;
@@ -183,7 +181,7 @@
                 text-decoration: underline solid hsl(from var(--accent) h s 60%) 2px;
             }
 
-            &:is([href^='https://static.aziis98.com'])
+            /* &:is([href^='https://static.aziis98.com'])
             {
                 color: #d00;
                 text-decoration: line-through solid #d00;
@@ -194,7 +192,7 @@
                     content: ' (temporarily unavailable)';
                     color: #d00;
                 }
-            }
+            } */
         }
 
         strong {
@@ -374,7 +372,7 @@
         }
 
         #mobile-sidebar-menu {
-            visibility: hidden;
+            display: none;
         }
 
         > header {
