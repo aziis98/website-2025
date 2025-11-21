@@ -1,0 +1,38 @@
+---
+title: (WIP) Figure Eight Knot Complement
+description: Some notes on the hyperbolic structure of the figure eight knot complement
+tags: ['math', 'lang-en']
+publish_date: 2025/11/20
+---
+
+The [figure eight knot](<https://en.wikipedia.org/wiki/Figure-eight_knot_(mathematics)>) is the simplest [hyperbolic knot](https://en.wikipedia.org/wiki/Hyperbolic_link) (i.e. one that has a complement that admits a complete metric of constant negative curvature). One way to understand this structure is through an ideal triangulation of the knot complement.
+
+<br />
+
+<div style="width: 75%; margin: auto; text-align: center; text-wrap: balance;">
+    The article is still **work in progress** but here a little sneak peek with pretty pictures of some knots
+</div>
+
+import { PlotKnot, FIGURE_EIGHT } from '@/components/preact/knots-3d'
+
+<figure>
+    <PlotKnot client:load />
+    <figcaption style="text-align: center; font-style: italic; margin-top: 0.5rem;">Trefoil knot</figcaption>
+</figure>
+
+<figure>
+    <PlotKnot knot={FIGURE_EIGHT} client:load />
+    <figcaption style="text-align: center; font-style: italic; margin-top: 0.5rem;">Figure-eight knot</figcaption>
+</figure>
+
+### Useful References
+
+- https://im.icerm.brown.edu/portfolio/a-complement-of-the-figure-eight-knot/
+
+- https://mathoverflow.net/questions/207063/hyperbolic-structure-on-figure-8-knot-complement
+
+- [A Topological Picturebook - George K. Francis (Book)](https://en.wikipedia.org/wiki/A_Topological_Picturebook)
+
+- [Thurston - The Geometry and Topology of Three-Manifolds](https://www.math.unl.edu/~jkettinger2/thurston.pdf)
+
+- [YouTube - Figure 8 knot complement](https://www.youtube.com/watch?v=xGf5jY_v5GE)

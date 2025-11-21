@@ -353,10 +353,12 @@
         grid-template-columns: 1fr minmax(auto, 80ch) 1fr;
         grid-template-rows: auto 1fr;
 
-        --main-gap: 1.5rem;
+        --main-gap-h: 1.5rem;
+        --main-gap-v: 2rem;
 
         @media screen and (width <= 960px) {
-            --main-gap: 1rem;
+            --main-gap-h: 1rem;
+            --main-gap-v: 1rem;
         }
 
         @media screen and (width <= 1200px) {
@@ -388,7 +390,7 @@
 
             grid-auto-flow: dense;
 
-            padding: 0 1rem var(--main-gap) 1rem;
+            padding: 0 1rem var(--main-gap-v) 1rem;
             background: #282828;
 
             position: relative;
@@ -421,7 +423,7 @@
             }
 
             > .logo {
-                padding-right: var(--main-gap);
+                padding-right: var(--main-gap-h);
 
                 text-decoration: none;
 
@@ -452,6 +454,10 @@
                 > h1 {
                     line-height: 1;
                     text-wrap: balance;
+
+                    @media screen and (width <= 600px) {
+                        line-height: 1.25;
+                    }
                 }
             }
 
@@ -474,7 +480,7 @@
 
             > .sidebar {
                 /* the + 0.25rem is a correction to match the text-top line of the art and the text */
-                padding: calc(var(--main-gap) + 0.25rem) var(--main-gap) 0 0;
+                padding: calc(var(--main-gap-v) + 0.25rem) var(--main-gap-h) 0 0;
 
                 justify-self: end;
 
@@ -486,11 +492,11 @@
 
             > .content {
                 grid-column: 2 / 3;
-                padding: 1.15rem 0 10rem;
+                padding: calc(var(--main-gap-v) - 0.125rem) 0 10rem;
                 min-width: 0;
 
                 &.wide {
-                    padding-right: var(--main-gap);
+                    padding-right: var(--main-gap-h);
                 }
 
                 @media screen and (width <= 600px) {
@@ -503,7 +509,7 @@
         }
 
         @media screen and (width <= 960px) {
-            grid-template-columns: auto 70ch;
+            grid-template-columns: auto minmax(auto, 70ch);
 
             > header {
                 > .header-title {
@@ -720,7 +726,7 @@
     .blog-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(21rem, auto));
-        gap: var(--main-gap);
+        gap: var(--main-gap-h);
 
         .blog-item {
             padding: 0.5rem;
@@ -790,7 +796,7 @@
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(21rem, auto));
         grid-auto-rows: calc(21rem / 1.5);
-        gap: var(--main-gap);
+        gap: var(--main-gap-h);
 
         img {
             background: #fff;
@@ -838,7 +844,7 @@
     .project-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(21rem, auto));
-        gap: var(--main-gap);
+        gap: var(--main-gap-h);
 
         /* align-items: start; */
 
@@ -1017,7 +1023,7 @@
         flex-wrap: wrap;
         align-items: end;
 
-        gap: var(--main-gap);
+        gap: var(--main-gap-h);
 
         .notebook-item {
             color: inherit;
