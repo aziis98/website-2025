@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'preact/hooks'
 
 import * as THREE from 'three'
-// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-const { OrbitControls } = await import('three/examples/jsm/controls/OrbitControls.js')
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
 import MAIN_FRAGMENT_SHADER from '@/assets/shaders/hatching.frag?raw'
 import MAIN_VERTEX_SHADER from '@/assets/shaders/hatching.vert?raw'
@@ -11,17 +10,6 @@ import OUTLINE_VERTEX_SHADER from '@/assets/shaders/outline.vert?raw'
 
 // https://www.wolframcloud.com/obj/9e91c33b-e5d5-41da-b9bc-560005b42282
 import RAW_FIGURE_EIGHT_KNOT_DATA from '@/assets/knot-data/figure-eight.json'
-
-export const TREFOIL_KNOT = {
-    type: 'torus-knot',
-    p: 2,
-    q: 3,
-} as const
-
-export const FIGURE_EIGHT = {
-    type: 'data',
-    points: RAW_FIGURE_EIGHT_KNOT_DATA.map(p => [p[0], p[1], p[2] * 0.33]),
-}
 
 type Knot =
     | { type: 'data'; points: [number, number, number][] }
@@ -97,7 +85,23 @@ function normalizeGeometry(geometry: THREE.BufferGeometry): void {
     geometry.computeBoundingBox()
 }
 
-export const PlotKnot = ({ knot = TREFOIL_KNOT }: { knot?: Knot }) => {
+const KNOT_NAMES = {
+    'trefoil': {
+        type: 'torus-knot',
+        p: 2,
+        q: 3,
+    } satisfies Knot,
+    'figure-eight': {
+        type: 'data',
+        points: RAW_FIGURE_EIGHT_KNOT_DATA.map(p => [p[0], p[1], p[2] * 0.33]),
+    } satisfies Knot,
+}
+
+export const PlotKnot = ({ name, knot = KNOT_NAMES['trefoil'] }: { name?: keyof typeof KNOT_NAMES; knot?: Knot }) => {
+    if (name && KNOT_NAMES[name]) {
+        knot = KNOT_NAMES[name]
+    }
+
     const containerRef = useRef<HTMLDivElement>(null)
     const sceneRef = useRef<THREE.Scene | null>(null)
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
