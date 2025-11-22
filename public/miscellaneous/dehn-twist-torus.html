@@ -79,7 +79,7 @@
             <p class="subtitle">Action on Longitudinal Generator</p>
             <div class="control-group">
                 <label for="twistMinor">Twist (k) <span id="valMinor" class="value-display">0.00</span></label>
-                <input type="range" id="twistMinor" min="-2" max="2" step="0.01" value="0" />
+                <input type="range" id="twistMinor" min="-1" max="4" step="0.01" value="0" />
             </div>
         </div>
 
@@ -101,7 +101,7 @@
             scene.background = new THREE.Color(0xffffff)
 
             const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000)
-            camera.position.set(0, 25, 25) // Adjusted slightly for better view of spheres
+            camera.position.set(30, 10, -10) // Adjusted slightly for better view of spheres
 
             const renderer = new THREE.WebGLRenderer({ antialias: true })
             renderer.setSize(window.innerWidth, window.innerHeight)
@@ -115,54 +115,54 @@
             // --- Shader Definition ---
 
             const vertexShader = `
-        varying vec2 vUv;
-        uniform float uTwistMinor;
+                varying vec2 vUv;
+                uniform float uTwistMinor;
 
-        void main() {
-            vec2 modifiedUv = uv;
-            // Dehn Twist Operation:
-            // We twist the meridian (y) based on the longitude (x).
-            modifiedUv.y += uv.x * uTwistMinor;
-            vUv = modifiedUv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-    `
+                void main() {
+                    vec2 modifiedUv = uv;
+                    // Dehn Twist Operation:
+                    // We twist the meridian (y) based on the longitude (x).
+                    modifiedUv.y += uv.x * uTwistMinor;
+                    vUv = modifiedUv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `
 
             const fragmentShader = `
-        varying vec2 vUv;
-        uniform vec3 uColor;
-        uniform float uScale;
+                varying vec2 vUv;
+                uniform vec3 uColor;
+                uniform float uScale;
 
-        // Checkerboard Pattern Function
-        float checkerboard(vec2 uv, float scale) {
-            vec2 pos = floor(uv * vec2(1.0 - 1.0 / scale, 0.5) * scale);
-            return mod(pos.x + pos.y, 2.0);
-        }
-        
-        // Function to highlight a specific longitudinal curve
-        float highlightLine(vec2 uv) {
-            // Outer Equator corresponds to UV.y = 0.0 (or integers)
-            float d = abs(fract(uv.y + 0.5) - 0.5);
-            float width = fwidth(uv.y) * 4.0; 
-            return 1.0 - smoothstep(0.0, width, d);
-        }
+                // Checkerboard Pattern Function
+                float checkerboard(vec2 uv, float scale) {
+                    vec2 pos = floor(uv * vec2(scale * 2.0, scale));
+                    return mod(pos.x + pos.y, 2.0);
+                }
+                
+                // Function to highlight a specific longitudinal curve
+                float highlightLine(vec2 uv) {
+                    // Outer Equator corresponds to UV.y = 0.0 (or integers)
+                    float d = abs(fract(uv.y + 0.5) - 0.5);
+                    float width = fwidth(uv.y) * 4.0; 
+                    return 1.0 - smoothstep(0.0, width, d);
+                }
 
-        void main() {
-            // 1. Draw Checkerboard Pattern
-            float c = checkerboard(vUv, uScale * 0.5); 
-            vec3 checkColor1 = vec3(0.9, 0.9, 0.9); // Light gray
-            vec3 checkColor2 = vec3(0.7, 0.7, 0.7); // Slightly darker gray
-            vec3 finalColor = mix(checkColor1, checkColor2, c);
-            
-            // 2. Draw Highlighted Generator Curve (Dark Green)
-            float h = highlightLine(vUv);
-            vec3 highlightColor = vec3(0.0, 0.5, 0.0); 
-            
-            finalColor = mix(finalColor, highlightColor, h);
+                void main() {
+                    // 1. Draw Checkerboard Pattern
+                    float c = checkerboard(vUv, uScale * 0.5); 
+                    vec3 checkColor1 = vec3(0.9, 0.9, 0.9); // Light gray
+                    vec3 checkColor2 = vec3(0.7, 0.7, 0.7); // Slightly darker gray
+                    vec3 finalColor = mix(checkColor1, checkColor2, c);
+                    
+                    // 2. Draw Highlighted Generator Curve (Dark Green)
+                    float h = highlightLine(vUv);
+                    vec3 highlightColor = vec3(0.0, 0.5, 0.0); 
+                    
+                    finalColor = mix(finalColor, highlightColor, h);
 
-            gl_FragColor = vec4(finalColor, 1.0);
-        }
-    `
+                    gl_FragColor = vec4(finalColor, 1.0);
+                }
+            `
 
             // --- Object Creation ---
             const R = 10 // Major radius
@@ -175,7 +175,7 @@
                 uniforms: {
                     uTwistMinor: { value: 0.0 },
                     uColor: { value: new THREE.Color(0x00ffff) },
-                    uScale: { value: 70.0 },
+                    uScale: { value: 32.0 },
                 },
                 side: THREE.DoubleSide,
                 extensions: {
@@ -216,12 +216,21 @@
             const sliderMinor = document.getElementById('twistMinor')
             const valMinor = document.getElementById('valMinor')
 
+            function snapToInteger(value, delta = 0.025) {
+                const nearestInt = Math.round(value)
+                if (Math.abs(value - nearestInt) < delta) {
+                    return nearestInt
+                }
+
+                return value
+            }
+
             function updateUniforms() {
-                const k = parseFloat(sliderMinor.value)
+                const k = snapToInteger(parseFloat(sliderMinor.value))
 
                 // Update Shader
                 material.uniforms.uTwistMinor.value = k
-                valMinor.textContent = k.toFixed(2)
+                valMinor.textContent = k
 
                 // Update End Dot Position
                 // The end dot represents the endpoint of the generator curve after 1 full revolution (theta=2PI).
