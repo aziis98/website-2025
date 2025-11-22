@@ -27,8 +27,11 @@ float random(vec2 st) {
 }
 
 void main() {
+    // Fixed Light
+    // float NdotL = dot(vWorldNormal, normalize(uLightDir));
+    
     // 1. Lighting Calculation (Lambert)
-    float NdotL = dot(vWorldNormal, normalize(uLightDir));
+    float NdotL = dot(vNormal, normalize(uLightDir));
     float intensity = NdotL * 0.5 + 0.5; // Remap to 0.0 - 1.0
 
     // 2. Hatching Algorithm (Screen Space)
