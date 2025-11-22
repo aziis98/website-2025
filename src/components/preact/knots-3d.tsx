@@ -128,7 +128,7 @@ export const PlotKnot = ({ name, knot = KNOT_NAMES['trefoil'] }: { name?: keyof 
             },
         }
 
-        // --- SCENE SETUP ---
+        // Scene Setup
         const scene = new THREE.Scene()
         sceneRef.current = scene
 
@@ -159,7 +159,10 @@ export const PlotKnot = ({ name, knot = KNOT_NAMES['trefoil'] }: { name?: keyof 
         let autoRotateEnabled = true
         let autoRotateTimeout: NodeJS.Timeout | null = null
 
-        const restartAutoRotate = () => {
+        const handleInteraction = (isMouseDown: boolean) => {
+            mouseDown = isMouseDown
+            autoRotateEnabled = false
+
             if (autoRotateTimeout) clearTimeout(autoRotateTimeout)
             autoRotateEnabled = false
             autoRotateTimeout = setTimeout(() => {
@@ -167,63 +170,47 @@ export const PlotKnot = ({ name, knot = KNOT_NAMES['trefoil'] }: { name?: keyof 
             }, 1000)
         }
 
-        const handleUserInteraction = () => {
-            autoRotateEnabled = false
-            restartAutoRotate()
-        }
-
-        renderer.domElement.addEventListener('mousedown', () => {
-            mouseDown = true
-            handleUserInteraction()
-        })
-        renderer.domElement.addEventListener('touchstart', () => {
-            mouseDown = true
-            handleUserInteraction()
-        })
-        renderer.domElement.addEventListener('mouseup', () => {
-            mouseDown = false
-            handleUserInteraction()
-        })
-        renderer.domElement.addEventListener('touchend', () => {
-            mouseDown = false
-            handleUserInteraction()
-        })
+        renderer.domElement.addEventListener('pointerdown', () => handleInteraction(true))
+        renderer.domElement.addEventListener('pointerup', () => handleInteraction(false))
 
         // --- OBJECT CREATION ---
         const geometry = createKnotGeometry(knot)
         normalizeGeometry(geometry)
 
-        // Main Hatch Material
-        const hatchMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                uInkColor: { value: new THREE.Color(config.colors.ink) },
-                uPaperColor: { value: new THREE.Color(config.colors.paper) },
-                uLightDir: { value: new THREE.Vector3(-2.0, 3.0, 3.0).normalize() },
-                uPitch: { value: config.hatching.pitch },
-                uHatchThickness: { value: config.hatching.thickness },
-                uHatchAngle: { value: config.hatching.angle },
-                uShadowThreshold: { value: config.hatching.threshold },
-                uShadowDensity: { value: config.hatching.density },
-            },
-            vertexShader: MAIN_VERTEX_SHADER,
-            fragmentShader: MAIN_FRAGMENT_SHADER,
-        })
+        // Mesh with Hatching Material
+        const mesh = new THREE.Mesh(
+            geometry,
+            new THREE.ShaderMaterial({
+                uniforms: {
+                    uInkColor: { value: new THREE.Color(config.colors.ink) },
+                    uPaperColor: { value: new THREE.Color(config.colors.paper) },
+                    uLightDir: { value: new THREE.Vector3(-2.0, 3.0, 3.0).normalize() },
+                    uPitch: { value: config.hatching.pitch },
+                    uHatchThickness: { value: config.hatching.thickness },
+                    uHatchAngle: { value: config.hatching.angle },
+                    uShadowThreshold: { value: config.hatching.threshold },
+                    uShadowDensity: { value: config.hatching.density },
+                },
+                vertexShader: MAIN_VERTEX_SHADER,
+                fragmentShader: MAIN_FRAGMENT_SHADER,
+            }),
+        )
 
-        const mesh = new THREE.Mesh(geometry, hatchMaterial)
+        // Mesh with Outline Material
+        const outlineMesh = new THREE.Mesh(
+            geometry,
+            new THREE.ShaderMaterial({
+                uniforms: {
+                    uThickness: { value: config.outline.thickness },
+                    uInkColor: { value: new THREE.Color(config.colors.ink) },
+                },
+                vertexShader: OUTLINE_VERTEX_SHADER,
+                fragmentShader: OUTLINE_FRAGMENT_SHADER,
+                side: THREE.BackSide,
+            }),
+        )
+
         scene.add(mesh)
-
-        // Outline Material
-        const outlineMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                uThickness: { value: config.outline.thickness },
-                uInkColor: { value: new THREE.Color(config.colors.ink) },
-            },
-            vertexShader: OUTLINE_VERTEX_SHADER,
-            fragmentShader: OUTLINE_FRAGMENT_SHADER,
-            side: THREE.BackSide,
-        })
-
-        const outlineMesh = new THREE.Mesh(geometry, outlineMaterial)
         scene.add(outlineMesh)
 
         // --- ANIMATION LOOP ---
@@ -268,15 +255,34 @@ export const PlotKnot = ({ name, knot = KNOT_NAMES['trefoil'] }: { name?: keyof 
         // --- CLEANUP ---
         return () => {
             window.removeEventListener('resize', handleResize)
-            renderer.domElement.removeEventListener('mousedown', handleUserInteraction)
-            renderer.domElement.removeEventListener('touchstart', handleUserInteraction)
             if (autoRotateTimeout) clearTimeout(autoRotateTimeout)
             if (animationIdRef.current !== null) {
                 cancelAnimationFrame(animationIdRef.current)
             }
             geometry.dispose()
-            hatchMaterial.dispose()
-            outlineMaterial.dispose()
+            new THREE.ShaderMaterial({
+                uniforms: {
+                    uInkColor: { value: new THREE.Color(config.colors.ink) },
+                    uPaperColor: { value: new THREE.Color(config.colors.paper) },
+                    uLightDir: { value: new THREE.Vector3(-2.0, 3.0, 3.0).normalize() },
+                    uPitch: { value: config.hatching.pitch },
+                    uHatchThickness: { value: config.hatching.thickness },
+                    uHatchAngle: { value: config.hatching.angle },
+                    uShadowThreshold: { value: config.hatching.threshold },
+                    uShadowDensity: { value: config.hatching.density },
+                },
+                vertexShader: MAIN_VERTEX_SHADER,
+                fragmentShader: MAIN_FRAGMENT_SHADER,
+            }).dispose()
+            new THREE.ShaderMaterial({
+                uniforms: {
+                    uThickness: { value: config.outline.thickness },
+                    uInkColor: { value: new THREE.Color(config.colors.ink) },
+                },
+                vertexShader: OUTLINE_VERTEX_SHADER,
+                fragmentShader: OUTLINE_FRAGMENT_SHADER,
+                side: THREE.BackSide,
+            }).dispose()
             renderer.dispose()
             containerRef.current?.removeChild(renderer.domElement)
         }

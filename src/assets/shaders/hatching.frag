@@ -10,7 +10,6 @@ uniform float uShadowThreshold;
 uniform float uShadowDensity; // New parameter for multi-level hatching
 
 varying vec3 vNormal;
-varying vec3 vWorldNormal;
 varying vec2 vUv;
 
 // Rotate logic for hatching angle
@@ -27,9 +26,6 @@ float random(vec2 st) {
 }
 
 void main() {
-    // Fixed Light
-    // float NdotL = dot(vWorldNormal, normalize(uLightDir));
-    
     // 1. Lighting Calculation (Lambert)
     float NdotL = dot(vNormal, normalize(uLightDir));
     float intensity = NdotL * 0.5 + 0.5; // Remap to 0.0 - 1.0
