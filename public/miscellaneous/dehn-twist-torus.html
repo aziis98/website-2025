@@ -138,26 +138,26 @@
                     vec2 pos = floor(uv * vec2(scale * 2.0, scale));
                     return mod(pos.x + pos.y, 2.0);
                 }
-                
+
                 // Function to highlight a specific longitudinal curve
                 float highlightLine(vec2 uv) {
                     // Outer Equator corresponds to UV.y = 0.0 (or integers)
                     float d = abs(fract(uv.y + 0.5) - 0.5);
-                    float width = fwidth(uv.y) * 4.0; 
+                    float width = fwidth(uv.y) * 4.0;
                     return 1.0 - smoothstep(0.0, width, d);
                 }
 
                 void main() {
                     // 1. Draw Checkerboard Pattern
-                    float c = checkerboard(vUv, uScale * 0.5); 
+                    float c = checkerboard(vUv, uScale * 0.5);
                     vec3 checkColor1 = vec3(0.9, 0.9, 0.9); // Light gray
                     vec3 checkColor2 = vec3(0.7, 0.7, 0.7); // Slightly darker gray
                     vec3 finalColor = mix(checkColor1, checkColor2, c);
-                    
+
                     // 2. Draw Highlighted Generator Curve (Dark Green)
                     float h = highlightLine(vUv);
-                    vec3 highlightColor = vec3(0.0, 0.5, 0.0); 
-                    
+                    vec3 highlightColor = vec3(0.0, 0.5, 0.0);
+
                     finalColor = mix(finalColor, highlightColor, h);
 
                     gl_FragColor = vec4(finalColor, 1.0);
@@ -207,6 +207,47 @@
             // Attach dots to the torus so they rotate with it
             torus.add(startDot)
             torus.add(endDot)
+
+            // // --- Radial Torus Inner Wireframe ---
+            // const wireframeRadialSegments = 4
+            // const wireframeLongitudinalSections = 16
+            // const wireframeGeometry = []
+            // for (let i = wireframeRadialSegments - 1; i < wireframeRadialSegments; i++) {
+            //     const tubeRadius = (r / wireframeRadialSegments) * (i + 1)
+
+            //     for (let j = 0; j < wireframeLongitudinalSections; j++) {
+            //         const theta = (j / wireframeLongitudinalSections) * Math.PI * 2
+
+            //         // const x = R - r + Math.cos(theta) * tubeRadius
+            //         // const y = Math.sin(theta) * tubeRadius
+
+            //         const x = R - r
+            //         const y = 0
+
+            //         const wireframeR = Math.hypot(
+            //             R - r + Math.cos(theta) * tubeRadius,
+            //             R - r + Math.sin(theta) * tubeRadius,
+            //         )
+
+            //         const ringGeometry = new THREE.TorusGeometry(wireframeR, 0.1, 8, 64)
+
+            //         ringGeometry.rotateX(Math.PI / 2)
+            //         ringGeometry.translate(0, y, 0)
+
+            //         scene.add(
+            //             new THREE.Mesh(
+            //                 ringGeometry,
+            //                 new THREE.MeshBasicMaterial({
+            //                     side: THREE.DoubleSide,
+            //                     color: 0x000000,
+            //                     opacity: 1.0,
+            //                     transparent: true,
+            //                     alphaHash: true,
+            //                 }),
+            //             ),
+            //         )
+            //     }
+            // }
 
             // --- Lighting ---
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
