@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Torus Dehn Twist Visualization</title>
+        <style>
+            body {
+                margin: 0;
+                overflow: hidden;
+                background-color: #ffffff;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+            canvas {
+                display: block;
+                width: 100vw;
+                height: 100vh;
+            }
+            #controls {
+                position: absolute;
+                top: 20px;
+                left: 20px;
+                background: rgba(240, 240, 240, 0.9);
+                padding: 20px;
+                border-radius: 8px;
+                color: #333;
+                pointer-events: auto;
+                border: 1px solid #ccc;
+                backdrop-filter: blur(8px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                min-width: 240px;
+            }
+            .control-group {
+                margin-bottom: 20px;
+            }
+            .control-group:last-child {
+                margin-bottom: 0;
+            }
+            label {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+                font-size: 0.9em;
+                color: #555;
+                font-weight: 600;
+            }
+            span.value-display {
+                color: #006400;
+                font-family: 'Consolas', monospace;
+                font-weight: bold;
+            }
+            input[type='range'] {
+                width: 100%;
+                cursor: pointer;
+                accent-color: #006400;
+            }
+            .title {
+                margin-top: 0;
+                margin-bottom: 5px;
+                font-size: 1.2em;
+                text-align: left;
+                color: #333;
+                font-weight: 700;
+            }
+            .subtitle {
+                margin-top: 0;
+                margin-bottom: 20px;
+                font-size: 0.8em;
+                color: #666;
+                font-style: italic;
+                border-bottom: 1px solid #ddd;
+                padding-bottom: 15px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="controls">
+            <h3 class="title">Dehn Twist</h3>
+            <p class="subtitle">Action on Longitudinal Generator</p>
+            <div class="control-group">
+                <label for="twistMinor">Twist (k) <span id="valMinor" class="value-display">0.00</span></label>
+                <input type="range" id="twistMinor" min="-2" max="2" step="0.01" value="0" />
+            </div>
+        </div>
+
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+                }
+            }
+        </script>
+
+        <script type="module">
+            import * as THREE from 'three'
+            import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+
+            // --- Scene Setup ---
+            const scene = new THREE.Scene()
+            scene.background = new THREE.Color(0xffffff)
+
+            const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000)
+            camera.position.set(0, 25, 25) // Adjusted slightly for better view of spheres
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true })
+            renderer.setSize(window.innerWidth, window.innerHeight)
+            renderer.setPixelRatio(window.devicePixelRatio)
+            document.body.appendChild(renderer.domElement)
+
+            const controls = new OrbitControls(camera, renderer.domElement)
+            controls.enableDamping = true
+            controls.dampingFactor = 0.05
+
+            // --- Shader Definition ---
+
+            const vertexShader = `
+        varying vec2 vUv;
+        uniform float uTwistMinor;
+
+        void main() {
+            vec2 modifiedUv = uv;
+            // Dehn Twist Operation:
+            // We twist the meridian (y) based on the longitude (x).
+            modifiedUv.y += uv.x * uTwistMinor;
+            vUv = modifiedUv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `
+
+            const fragmentShader = `
+        varying vec2 vUv;
+        uniform vec3 uColor;
+        uniform float uScale;
+
+        // Checkerboard Pattern Function
+        float checkerboard(vec2 uv, float scale) {
+            vec2 pos = floor(uv * vec2(1.0 - 1.0 / scale, 0.5) * scale);
+            return mod(pos.x + pos.y, 2.0);
+        }
+        
+        // Function to highlight a specific longitudinal curve
+        float highlightLine(vec2 uv) {
+            // Outer Equator corresponds to UV.y = 0.0 (or integers)
+            float d = abs(fract(uv.y + 0.5) - 0.5);
+            float width = fwidth(uv.y) * 4.0; 
+            return 1.0 - smoothstep(0.0, width, d);
+        }
+
+        void main() {
+            // 1. Draw Checkerboard Pattern
+            float c = checkerboard(vUv, uScale * 0.5); 
+            vec3 checkColor1 = vec3(0.9, 0.9, 0.9); // Light gray
+            vec3 checkColor2 = vec3(0.7, 0.7, 0.7); // Slightly darker gray
+            vec3 finalColor = mix(checkColor1, checkColor2, c);
+            
+            // 2. Draw Highlighted Generator Curve (Dark Green)
+            float h = highlightLine(vUv);
+            vec3 highlightColor = vec3(0.0, 0.5, 0.0); 
+            
+            finalColor = mix(finalColor, highlightColor, h);
+
+            gl_FragColor = vec4(finalColor, 1.0);
+        }
+    `
+
+            // --- Object Creation ---
+            const R = 10 // Major radius
+            const r = 3.5 // Minor (tube) radius
+            const geometry = new THREE.TorusGeometry(R, r, 64, 128)
+
+            const material = new THREE.ShaderMaterial({
+                vertexShader: vertexShader,
+                fragmentShader: fragmentShader,
+                uniforms: {
+                    uTwistMinor: { value: 0.0 },
+                    uColor: { value: new THREE.Color(0x00ffff) },
+                    uScale: { value: 70.0 },
+                },
+                side: THREE.DoubleSide,
+                extensions: {
+                    derivatives: true,
+                },
+            })
+
+            const torus = new THREE.Mesh(geometry, material)
+
+            // Rotate 90 degrees so the "Donut Hole" faces the camera
+            torus.rotation.x = Math.PI / 2
+
+            scene.add(torus)
+
+            // --- Sphere Dots ---
+            const dotGeometry = new THREE.SphereGeometry(0.25, 32, 32)
+            const dotMaterial = new THREE.MeshBasicMaterial({ color: 0x008800 }) // Bright Green
+
+            const startDot = new THREE.Mesh(dotGeometry, dotMaterial)
+            const endDot = new THREE.Mesh(dotGeometry, dotMaterial)
+
+            // Start Dot Position: Fixed at Outer Equator (phi=0) of the start slice (theta=0)
+            // In local torus coordinates (before rotation):
+            // x = (R + r*cos(0))*cos(0) = R + r
+            // y = (R + r*cos(0))*sin(0) = 0
+            // z = r*sin(0) = 0
+            startDot.position.set(R + r, 0, 0)
+
+            // Attach dots to the torus so they rotate with it
+            torus.add(startDot)
+            torus.add(endDot)
+
+            // --- Lighting ---
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
+            scene.add(ambientLight)
+
+            // --- UI Logic ---
+            const sliderMinor = document.getElementById('twistMinor')
+            const valMinor = document.getElementById('valMinor')
+
+            function updateUniforms() {
+                const k = parseFloat(sliderMinor.value)
+
+                // Update Shader
+                material.uniforms.uTwistMinor.value = k
+                valMinor.textContent = k.toFixed(2)
+
+                // Update End Dot Position
+                // The end dot represents the endpoint of the generator curve after 1 full revolution (theta=2PI).
+                // Due to the twist 'k', the curve has wrapped around the tube 'k' times.
+                // The angle around the tube is phi = -k * 2PI
+                const phi = -k * Math.PI * 2
+
+                // Calculate position on the torus surface at theta=0 (physically same slice as start)
+                // but at the new phi angle.
+                // x = (R + r * cos(phi)) * cos(0)
+                // y = (R + r * cos(phi)) * sin(0)  -> 0
+                // z = r * sin(phi)
+
+                endDot.position.set(R + r * Math.cos(phi), 0, r * Math.sin(phi))
+            }
+
+            sliderMinor.addEventListener('input', updateUniforms)
+
+            // Initialize position
+            updateUniforms()
+
+            // --- Resize Handler ---
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight
+                camera.updateProjectionMatrix()
+                renderer.setSize(window.innerWidth, window.innerHeight)
+            })
+
+            // --- Animation Loop ---
+            function animate() {
+                requestAnimationFrame(animate)
+                controls.update()
+                renderer.render(scene, camera)
+            }
+
+            animate()
+        </script>
+    </body>
+</html>
