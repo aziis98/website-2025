@@ -120,11 +120,11 @@ export const PlotKnot = ({ name, knot = KNOT_NAMES['trefoil'] }: { name?: keyof 
                 thickness: 0.013,
             },
             hatching: {
-                pitch: 7.0,
-                thickness: 2,
+                pitch: 6.0,
+                thickness: 1.5,
                 angle: 60,
                 threshold: 0.8,
-                density: 0.6,
+                density: 0.5,
             },
         }
 
