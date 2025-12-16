@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Approximation with Simple Functions</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+        <style>
+            /* Only prevent default touch actions on the drawing canvas to allow scrolling elsewhere */
+            #mainCanvas {
+                touch-action: none;
+                cursor: crosshair;
+            }
+            /* Custom scrollbar for sidebar */
+            aside::-webkit-scrollbar {
+                width: 6px;
+            }
+            aside::-webkit-scrollbar-thumb {
+                background: #cbd5e1;
+                border-radius: 3px;
+            }
+        </style>
+    </head>
+    <body class="bg-slate-50 text-slate-800 h-screen w-screen flex flex-col md:flex-row font-sans">
+        <!-- Sidebar -->
+        <aside
+            class="w-full md:w-80 flex-shrink-0 bg-white border-r border-slate-200 flex flex-col h-auto md:h-full z-20 shadow-xl md:shadow-none overflow-y-auto"
+        >
+            <!-- Header Section -->
+            <div class="p-6 border-b border-slate-100">
+                <h1 class="text-xl font-bold text-slate-800 mb-2 leading-tight">Simple Function Approximation</h1>
+                <p class="text-sm text-slate-500">
+                    Visualizing the theorem: Any bounded measurable function can be uniformly approximated by a monotone
+                    increasing sequence of simple functions.
+                </p>
+            </div>
+
+            <!-- Controls Section -->
+            <div class="p-6 flex-grow space-y-8">
+                <!-- Instructions -->
+                <div class="bg-blue-50 text-blue-900 p-4 rounded-lg border border-blue-100 text-xs leading-relaxed">
+                    <strong class="block mb-2 text-blue-700">How to use:</strong>
+                    <ul class="list-disc list-inside space-y-1 text-blue-800/80">
+                        <li class="mb-1">Draw a curve in the top plot area on the right.</li>
+                        <li>Adjust <strong>n</strong> below to change the step precision.</li>
+                        <li>Observe how the level sets $E_k$ decompose the domain below.</li>
+                    </ul>
+                </div>
+
+                <!-- Param Slider -->
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <label for="nSlider" class="font-bold text-slate-700 text-sm">Parameter $n$</label>
+                        <span id="nDisplay" class="bg-slate-800 text-white px-2 py-1 rounded text-xs font-mono">
+                            n = 1
+                        </span>
+                    </div>
+                    <input
+                        type="range"
+                        id="nSlider"
+                        min="0"
+                        max="6"
+                        step="1"
+                        value="1"
+                        class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    />
+                    <div
+                        class="flex justify-between text-[10px] uppercase font-bold text-slate-400 mt-2 tracking-wider"
+                    >
+                        <span>Coarse</span>
+                        <span>Fine</span>
+                    </div>
+                </div>
+
+                <!-- Info Box -->
+                <div
+                    id="stepInfo"
+                    class="text-xs font-mono text-slate-600 bg-slate-100 p-3 rounded border border-slate-200"
+                >
+                    Step size: $1/2^1 = 0.5$
+                </div>
+
+                <!-- Action Button -->
+                <button
+                    id="resetBtn"
+                    class="w-full py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2 shadow-sm"
+                >
+                    <i class="fa-solid fa-rotate-left text-slate-400"></i> Reset Curve
+                </button>
+            </div>
+
+            <!-- Footer Math -->
+            <div class="p-6 border-t border-slate-100 bg-slate-50">
+                <div class="text-xs text-slate-500 text-center">
+                    Approximation formula:
+                    <div class="mt-2 text-slate-800 font-medium">
+                        $$ \phi_n(x) = \dfrac{\lfloor 2^n f(x) \rfloor}{2^n} = \sum_{k=0}^{2^n - 1} \dfrac{k}{2^n}
+                        \chi_{E_k}(x) $$
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col min-w-0 h-full relative">
+            <!-- Plot 1: Main Function (Takes up remaining space) -->
+            <div class="flex-1 relative bg-white min-h-[300px]" id="canvas-container">
+                <canvas id="mainCanvas" class="block w-full h-full"></canvas>
+
+                <!-- Floating Legend -->
+                <div
+                    class="absolute top-4 right-4 bg-white/90 backdrop-blur p-3 rounded-lg shadow-sm border border-slate-200 text-xs pointer-events-none select-none z-10"
+                >
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <div class="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-sm"></div>
+                        <span class="font-medium text-slate-700">Original $f(x)$</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-sm"></div>
+                        <span class="font-medium text-slate-700">Simple $\phi_n(x)$</span>
+                    </div>
+                </div>
+
+                <!-- Grid overlay for visual structure (optional, subtle) -->
+                <div
+                    class="absolute inset-0 pointer-events-none border-b border-slate-200 shadow-[inset_0_-2px_4px_rgba(0,0,0,0.02)]"
+                ></div>
+            </div>
+
+            <!-- Plot 2: Level Sets (Fixed height or percentage) -->
+            <div
+                class="h-1/3 min-h-[200px] flex flex-col bg-slate-50 border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-10"
+                id="level-wrapper"
+            >
+                <div
+                    class="px-4 py-2 border-b border-slate-200 bg-white/50 backdrop-blur flex justify-between items-center select-none"
+                >
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500">
+                        Level Sets Decomposition
+                    </span>
+                    <span class="text-[10px] sm:text-xs font-mono text-slate-400">
+                        Sets $E_k = \{x \mid \frac{k}{2^n} \leq f(x) < \frac{k+1}{2^n}\}$
+                    </span>
+                </div>
+                <div class="flex-1 relative w-full overflow-hidden" id="level-container">
+                    <canvas id="levelCanvas" class="block w-full h-full"></canvas>
+                </div>
+            </div>
+        </main>
+
+        <!-- MathJax -->
+        <script>
+            window.MathJax = {
+                tex: {
+                    inlineMath: [
+                        ['$', '$'],
+                        ['\\(', '\\)'],
+                    ],
+                    displayMath: [
+                        ['$$', '$$'],
+                        ['\\[', '\\]'],
+                    ],
+                },
+            }
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+        <script type="module">
+            // Main Canvas elements
+            const canvas = document.getElementById('mainCanvas')
+            const ctx = canvas.getContext('2d')
+            const container = document.getElementById('canvas-container')
+
+            // Level Set Canvas elements
+            const levelCanvas = document.getElementById('levelCanvas')
+            const levelCtx = levelCanvas.getContext('2d')
+            const levelContainer = document.getElementById('level-container')
+
+            // Controls
+            const slider = document.getElementById('nSlider')
+            const nDisplay = document.getElementById('nDisplay')
+            const stepInfo = document.getElementById('stepInfo')
+            const resetBtn = document.getElementById('resetBtn')
+
+            let isDrawing = false
+            let width, height // For main canvas
+            let levelWidth, levelHeight // For level canvas
+            let n = 1
+
+            // Data
+            let functionData = []
+
+            function init() {
+                resize()
+                // Ensure we have data before first draw
+                if (functionData.length === 0) resetFunction()
+                draw()
+
+                // Resize Observer for robust resizing
+                const resizeObserver = new ResizeObserver(() => {
+                    requestAnimationFrame(() => {
+                        resize()
+                        draw()
+                    })
+                })
+                resizeObserver.observe(container)
+                resizeObserver.observe(levelContainer)
+
+                // Mouse/Touch Events for Main Canvas
+                canvas.addEventListener('pointerdown', startDrawing)
+                window.addEventListener('pointermove', drawMove)
+                window.addEventListener('pointerup', stopDrawing)
+                canvas.addEventListener('pointerleave', stopDrawing)
+
+                canvas.addEventListener(
+                    'touchstart',
+                    e => {
+                        e.preventDefault()
+                        startDrawing(e.touches[0])
+                    },
+                    { passive: false },
+                )
+
+                window.addEventListener(
+                    'touchmove',
+                    e => {
+                        // Only prevent default if we are drawing on the canvas
+                        if (e.target === canvas) {
+                            e.preventDefault()
+                            drawMove(e.touches[0])
+                        }
+                    },
+                    { passive: false },
+                )
+
+                window.addEventListener('touchend', stopDrawing)
+
+                // Controls
+                slider.addEventListener('input', e => {
+                    n = parseInt(e.target.value)
+                    updateUI()
+                    draw()
+                })
+
+                resetBtn.addEventListener('click', () => {
+                    resetFunction()
+                    draw()
+                })
+            }
+
+            function resize() {
+                // Main Canvas
+                const rect = container.getBoundingClientRect()
+                // Avoid setting 0 sizes which break canvas
+                if (rect.width === 0 || rect.height === 0) return
+
+                canvas.width = rect.width
+                canvas.height = rect.height
+                width = canvas.width
+                height = canvas.height
+
+                // Level Canvas
+                const levelRect = levelContainer.getBoundingClientRect()
+                if (levelRect.width > 0 && levelRect.height > 0) {
+                    levelCanvas.width = levelRect.width
+                    levelCanvas.height = levelRect.height
+                    levelWidth = levelCanvas.width
+                    levelHeight = levelCanvas.height
+                }
+
+                // Resample data if width changed
+                if (functionData.length !== width) {
+                    const oldData = [...functionData]
+                    functionData = new Array(width).fill(0)
+                    if (oldData.length > 0) {
+                        for (let i = 0; i < width; i++) {
+                            const percent = i / width
+                            const oldIdx = Math.floor(percent * oldData.length)
+                            functionData[i] = oldData[oldIdx] || 0.5
+                        }
+                    } else {
+                        // If no old data, will be handled by resetFunction called in init or manually
+                        if (width > 0) resetFunction()
+                    }
+                }
+            }
+
+            function resetFunction() {
+                if (!width) return
+                functionData = new Array(width).fill(0)
+                for (let x = 0; x < width; x++) {
+                    const t = x / width
+                    const val = 0.5 + 0.3 * Math.sin(t * 2 * Math.PI) + 0.15 * Math.sin(t * 8 * Math.PI)
+                    functionData[x] = Math.max(0.01, Math.min(0.99, val))
+                }
+            }
+
+            function updateUI() {
+                nDisplay.textContent = `n = ${n}`
+                const denominator = Math.pow(2, n)
+                stepInfo.textContent = `Step size: 1/2^${n} = ${(1 / denominator).toFixed(4)}`
+            }
+
+            function toCanvasY(normY) {
+                return height - normY * height
+            }
+
+            function toNormY(canvasY) {
+                return 1 - canvasY / height
+            }
+
+            function startDrawing(e) {
+                isDrawing = true
+                updateFunctionFromEvent(e)
+            }
+
+            function drawMove(e) {
+                if (!isDrawing) return
+                updateFunctionFromEvent(e)
+            }
+
+            function stopDrawing() {
+                isDrawing = false
+                window.lastX = undefined
+            }
+
+            function updateFunctionFromEvent(e) {
+                const rect = canvas.getBoundingClientRect()
+                const x = Math.floor(e.clientX - rect.left)
+                const y = e.clientY - rect.top
+
+                if (x < 0 || x >= width) return
+
+                const normY = Math.max(0, Math.min(1, toNormY(y)))
+
+                if (window.lastX !== undefined && Math.abs(x - window.lastX) > 1) {
+                    const x0 = window.lastX
+                    const y0 = functionData[x0]
+                    const steps = Math.abs(x - x0)
+                    const stepX = x > x0 ? 1 : -1
+
+                    for (let i = 0; i < steps; i++) {
+                        const currX = x0 + i * stepX
+                        if (currX >= 0 && currX < width) {
+                            const t = i / steps
+                            functionData[currX] = y0 + (normY - y0) * t
+                        }
+                    }
+                }
+
+                functionData[x] = normY
+                window.lastX = x
+                requestAnimationFrame(draw)
+            }
+
+            function draw() {
+                if (!width || !levelWidth) return
+                drawMain()
+                drawLevelSets()
+            }
+
+            function drawMain() {
+                ctx.clearRect(0, 0, width, height)
+
+                const steps = Math.pow(2, n)
+
+                // Grid
+                ctx.beginPath()
+                ctx.strokeStyle = '#f1f5f9'
+                ctx.lineWidth = 1
+                if (steps < 64) {
+                    const stepHeight = height / steps
+                    for (let i = 1; i < steps; i++) {
+                        const y = height - i * stepHeight
+                        ctx.moveTo(0, y)
+                        ctx.lineTo(width, y)
+                    }
+                }
+                ctx.stroke()
+
+                // User Function
+                ctx.beginPath()
+                ctx.strokeStyle = '#3b82f6'
+                ctx.lineWidth = 3
+                ctx.lineJoin = 'round'
+                ctx.lineCap = 'round'
+
+                if (functionData.length > 0) {
+                    ctx.moveTo(0, toCanvasY(functionData[0]))
+                    for (let x = 1; x < width; x++) {
+                        ctx.lineTo(x, toCanvasY(functionData[x]))
+                    }
+                }
+                ctx.stroke()
+
+                // Approximation (Red Steps)
+                ctx.beginPath()
+                ctx.strokeStyle = '#ef4444'
+                ctx.lineWidth = 2
+
+                for (let x = 0; x < width; x++) {
+                    const val = functionData[x]
+                    const k = Math.floor(val * steps)
+                    const simpleVal = k / steps
+                    const canvasY = toCanvasY(simpleVal)
+
+                    if (x === 0) {
+                        ctx.moveTo(x, canvasY)
+                    } else {
+                        ctx.lineTo(x, canvasY)
+                    }
+                }
+                ctx.stroke()
+            }
+
+            function drawLevelSets() {
+                levelCtx.clearRect(0, 0, levelWidth, levelHeight)
+
+                const numLevels = Math.pow(2, n)
+                // Calculate row height with a minimum to ensure visibility, but constrained to fit
+                const rowHeight = levelHeight / numLevels
+
+                // 1. Draw backgrounds for rows (striped effect)
+                for (let k = 0; k < numLevels; k++) {
+                    levelCtx.fillStyle = k % 2 === 0 ? '#f8fafc' : '#ffffff'
+                    const y = levelHeight - (k + 1) * rowHeight
+                    levelCtx.fillRect(0, y, levelWidth, rowHeight)
+
+                    // Add borders if rows are large enough
+                    if (rowHeight > 10) {
+                        levelCtx.fillStyle = '#e2e8f0'
+                        levelCtx.fillRect(0, y, levelWidth, 1)
+                    }
+                }
+
+                // 2. Draw the intervals for each k
+                levelCtx.fillStyle = '#ef4444' // Use the same red as the function approximation
+
+                let currentK = -1
+                let startX = 0
+
+                // Run-length encoding style drawing for performance
+                for (let x = 0; x < width; x++) {
+                    const val = functionData[x]
+                    // Clamp k to valid range [0, numLevels-1]
+                    const k = Math.min(Math.floor(val * numLevels), numLevels - 1)
+
+                    if (x === 0) {
+                        currentK = k
+                        startX = 0
+                    } else if (k !== currentK) {
+                        // Draw segment for previous k
+                        // Map x coordinate from main canvas width to level canvas width
+                        const rX = (startX / width) * levelWidth
+                        const rW = ((x - startX) / width) * levelWidth
+                        const y = levelHeight - (currentK + 1) * rowHeight
+
+                        // Add a small padding for visuals if rows are tall
+                        const pad = rowHeight > 8 ? 1 : 0
+                        levelCtx.fillRect(rX, y + pad, rW + 0.5, rowHeight - 2 * pad)
+
+                        currentK = k
+                        startX = x
+                    }
+                }
+                // Draw final segment
+                const rX = (startX / width) * levelWidth
+                const rW = ((width - startX) / width) * levelWidth
+                const y = levelHeight - (currentK + 1) * rowHeight
+                const pad = rowHeight > 8 ? 1 : 0
+                levelCtx.fillRect(rX, y + pad, rW, rowHeight - 2 * pad)
+
+                // 3. Draw Labels (only if enough space)
+                if (rowHeight > 14) {
+                    levelCtx.fillStyle = '#64748b'
+                    levelCtx.font = '10px monospace'
+                    levelCtx.textAlign = 'right'
+                    levelCtx.textBaseline = 'middle'
+
+                    // Draw a few labels, don't clutter
+                    for (let k = 0; k < numLevels; k++) {
+                        const y = levelHeight - (k + 1) * rowHeight + rowHeight / 2
+                        // Label: k=...
+                        levelCtx.fillText(`k=${k}`, 35, y)
+                    }
+                }
+            }
+
+            init()
+        </script>
+    </body>
+</html>
