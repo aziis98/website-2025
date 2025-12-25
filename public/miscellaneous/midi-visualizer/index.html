@@ -268,8 +268,8 @@
                     display: grid;
 
                     .viz-meta {
-                        display: none;
-                        justify-content: space-between;
+                        display: grid;
+                        grid-template-columns: auto 1fr auto auto;
                         align-items: center;
                         padding: 10px 12px;
                         background: rgba(0, 0, 0, 0.1);
@@ -279,24 +279,18 @@
                         gap: 12px;
 
                         &.visible {
-                            display: flex;
+                            display: grid;
                         }
 
-                        .meta-info {
+                        .controls {
                             display: flex;
-                            gap: 16px;
-                            align-items: center;
+                            gap: 8px;
                         }
 
                         .timer {
                             font-family: 'Space Grotesk', monospace;
                             color: var(--accent-900);
                             font-size: 16px;
-                        }
-
-                        .controls {
-                            display: flex;
-                            gap: 8px;
                         }
                     }
 
@@ -335,6 +329,13 @@
                 header.hero .stats {
                     text-align: left;
                 }
+                .canvas-shell .viz-meta {
+                    grid-template-columns: auto 1fr auto;
+                }
+                #note-count {
+                    grid-column: 1 / -1;
+                    order: 3;
+                }
             }
         </style>
     </head>
@@ -345,9 +346,12 @@
                     <h1 class="title">MIDI Visualizer</h1>
                     <p class="subtitle">
                         Play MIDI files in the browser with a nice real-time visualization inspired by samizdat's
-                        <em>fuguestate</em>. Drag and drop a MIDI file or click to select one from your computer. For
-                        now this works best with simple MIDI files of at most at most a few thousand notes (less than
-                        10kB files).
+                        <em>fuguestate</em>. Drag and drop a MIDI file or click to select one from your computer.
+                    </p>
+                    <p class="subtitle">
+                        For now this works best with simple MIDI files of at most a few thousand notes (files less than
+                        10kB). If you see a sad face after loading a file than it was too big and the browser gave up
+                        creating the canvas buffer.
                     </p>
                 </div>
             </header>
@@ -391,10 +395,8 @@
                             <button id="btn-play" class="btn btn-primary">Play</button>
                             <button id="btn-stop" class="btn btn-danger">Stop</button>
                         </div>
-                        <div class="meta-info">
-                            <span id="timer" class="timer">0:00</span>
-                            <span id="note-count">No file loaded</span>
-                        </div>
+                        <span id="timer" class="timer">0:00</span>
+                        <span id="note-count">No file loaded</span>
                     </div>
                     <div id="scroll-container">
                         <canvas id="visualizer-canvas"></canvas>
@@ -457,6 +459,8 @@
             let minPitch = 0
             let maxPitch = 127
             let pitchRange = 127
+            let canvasWidth = 0
+            let canvasHeight = 0
             let themeColors = {
                 canvasBg: '#0c0f16',
                 grid: '#243143',
@@ -471,7 +475,7 @@
             const btnPlay = document.getElementById('btn-play')
             const btnStop = document.getElementById('btn-stop')
             const timerDisplay = document.getElementById('timer')
-            const noteCountDisplay = document.getElementById('note-count')
+            const infoDisplay = document.getElementById('note-count')
             const overlay = document.getElementById('overlay')
             const vizMeta = document.getElementById('viz-meta')
             const canvasCard = document.getElementById('canvas-card')
@@ -522,7 +526,7 @@
                     scheduleMusic(midi)
 
                     hideOverlay()
-                    noteCountDisplay.textContent = `${notes.length} notes`
+                    updateInfoDisplay()
                     updateTimer(0)
                     vizMeta.classList.add('visible')
                     canvasCard.classList.add('visible')
@@ -574,6 +578,15 @@
 
             function hideOverlay() {
                 overlay.style.display = 'none'
+            }
+
+            function updateInfoDisplay() {
+                const canvasMegaPixels = ((canvasWidth * canvasHeight) / 1e6).toFixed(1)
+
+                infoDisplay.textContent = [
+                    `notes: ${flatNotes.length}`,
+                    `canvas: ${canvasWidth | 0}x${canvasHeight | 0} = ${canvasMegaPixels}MP`,
+                ].join(' · ')
             }
 
             function refreshColors() {
@@ -757,6 +770,9 @@
                     playing: isPlaying,
                     pitchRange: { size: pitchRange, min: minPitch, max: maxPitch },
                 })
+                // Update canvas dimensions state
+                canvasWidth = scene.width
+                canvasHeight = scene.height
                 renderCanvasScene(ctx, scene)
             }
 
@@ -917,7 +933,7 @@
                     scheduleMusic(midi)
 
                     hideOverlay()
-                    noteCountDisplay.textContent = `${notes.length} notes`
+                    updateInfoDisplay()
                     updateTimer(0)
                     vizMeta.classList.add('visible')
                     canvasCard.classList.add('visible')
