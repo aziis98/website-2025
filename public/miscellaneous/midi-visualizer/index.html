@@ -1,0 +1,934 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>MIDI Visualizer</title>
+
+        <link rel="icon" type="image/svg+xml" href="./icon-dark.svg" media="(prefers-color-scheme: dark)" />
+        <link rel="icon" type="image/svg+xml" href="./icon-light.svg" media="(prefers-color-scheme: light)" />
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap"
+        />
+
+        <!-- og tags -->
+        <meta property="og:title" content="MIDI Visualizer" />
+        <meta property="og:description" content="Visualize MIDI files in real-time as they play back in the browser." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://aziis98.com/miscellaneous/midi-visualizer" />
+
+        <style>
+            :root {
+                color-scheme: light dark;
+                --bg: #282828;
+                --panel: transparent;
+                --panel-strong: transparent;
+                --text: #ebdbb2;
+                --muted: #a89984;
+                --border: #504945;
+
+                --accent-400: #fabd2f;
+                --accent-600: #5c4f1c;
+                --accent-700: #a85714;
+                --accent-900: #fe8019;
+
+                --danger: #fb4934;
+
+                --note: #fabd2f;
+                --grid: #2e2b29;
+                --cursor: #b8bb26;
+                --canvas-bg: #1d2021;
+                --overlay: rgba(40, 40, 40, 0.92);
+                --shadow: none;
+
+                --drop-target: rgba(254, 128, 25, 0.08);
+                --drop-hover: rgba(254, 128, 25, 0.12);
+            }
+
+            @media (prefers-color-scheme: light) {
+                :root {
+                    --bg: #f9f5d7;
+                    --panel: transparent;
+                    --panel-strong: transparent;
+                    --text: #3c3836;
+                    --muted: #928374;
+                    --border: #d5c4a1;
+
+                    --accent-600: #d6b68a;
+                    --accent-400: #b57614;
+                    --accent-700: #6b4a0f;
+                    --accent-900: #af3a03;
+
+                    --danger: #c14018;
+
+                    --note: #b57614;
+                    --grid: hsl(from var(--bg) h s 80%);
+                    --cursor: #6f8e40;
+                    --canvas-bg: hsl(from var(--bg) h s 95%);
+                    --overlay: rgba(249, 245, 215, 0.92);
+                    --shadow: none;
+
+                    --drop-target: rgba(181, 118, 20, 0.08);
+                    --drop-hover: rgba(181, 118, 20, 0.12);
+                }
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body.app-body {
+                margin: 0;
+                min-height: 100vh;
+                background: var(--bg);
+                color: var(--text);
+                font-family: 'IBM Plex Mono', 'Space Grotesk', 'Noto Sans Devanagari', monospace;
+                padding: 16px;
+                display: flex;
+                justify-content: center;
+            }
+            .app-shell {
+                width: 100%;
+                max-width: 1200px;
+                display: grid;
+                gap: 12px;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                grid-template-rows: auto auto auto;
+                align-content: start;
+
+                header.hero,
+                section {
+                    background: none;
+                    border-bottom: 1px solid var(--border);
+                    padding: 8px 0 12px;
+                }
+            }
+
+            header.hero {
+                grid-column: 1 / -1;
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 6px;
+                align-items: end;
+
+                .title {
+                    margin: 0;
+                    font-size: 26px;
+                    letter-spacing: -0.3px;
+                    color: var(--accent-400);
+                }
+
+                .subtitle {
+                    margin: 4px 0 0;
+                    color: var(--muted);
+                    font-size: 14px;
+                }
+            }
+
+            section.sources {
+                grid-column: 1 / -1;
+                color: var(--text);
+                line-height: 1.5;
+
+                h2 {
+                    margin: 0 0 4px;
+                    font-size: 15px;
+                    color: var(--accent-400);
+                }
+
+                a {
+                    color: var(--accent-900);
+                    text-decoration: underline;
+                    text-decoration-thickness: 1.5px;
+                    text-underline-offset: 2px;
+                    padding: 0 3px;
+                    border-radius: 2px;
+                }
+
+                a:hover {
+                    color: var(--bg);
+                    background: var(--accent-900);
+                    text-decoration: none;
+                }
+
+                font-size: 14px;
+            }
+
+            .btn {
+                border: 1px solid var(--accent-400);
+                border-radius: 6px;
+                padding: 8px 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition:
+                    transform 120ms ease,
+                    opacity 120ms ease;
+                color: var(--bg);
+                background: var(--accent-400);
+            }
+
+            .btn-primary {
+                background: var(--accent-400);
+                border-color: var(--accent-400);
+            }
+
+            .btn:disabled {
+                opacity: 0.55;
+                cursor: not-allowed;
+            }
+
+            .btn:hover:not(:disabled) {
+                transform: translateY(-1px);
+            }
+
+            .btn-danger {
+                background: var(--accent-900);
+                border-color: var(--accent-900);
+            }
+
+            .btn-pause {
+                background: var(--accent-900);
+                border-color: var(--accent-900);
+                color: var(--bg);
+            }
+
+            section.controls {
+                grid-column: 1 / -1;
+                display: grid;
+                gap: 12px;
+                text-align: center;
+
+                .drop-target {
+                    display: grid;
+                    gap: 12px;
+                    padding: 48px 32px;
+                    border: 2px dashed var(--border);
+                    border-radius: 8px;
+                    background: var(--drop-target);
+                    transition:
+                        border-color 200ms ease,
+                        background 200ms ease,
+                        transform 150ms ease;
+                    cursor: pointer;
+
+                    > * {
+                        pointer-events: none;
+                    }
+
+                    &:hover {
+                        border-color: var(--accent-900);
+                        background: var(--drop-hover);
+                    }
+
+                    &.drag-over {
+                        border-color: var(--accent-strong);
+                        background: var(--drop-hover);
+                        transform: scale(1.02);
+                    }
+                }
+
+                .label {
+                    color: var(--text);
+                    font-size: 17px;
+                    font-weight: 600;
+                    letter-spacing: 0.01em;
+                    cursor: pointer;
+                }
+
+                .file-input {
+                    position: absolute;
+                    width: 1px;
+                    height: 1px;
+                    padding: 0;
+                    margin: -1px;
+                    overflow: hidden;
+                    clip: rect(0, 0, 0, 0);
+                    white-space: nowrap;
+                    border: 0;
+                }
+            }
+
+            section.canvas-card {
+                grid-column: 1 / -1;
+                padding: 0;
+                display: none;
+
+                &.visible {
+                    display: block;
+                }
+
+                .canvas-shell {
+                    border: 1px solid var(--border);
+                    border-radius: 6px;
+                    overflow: hidden;
+                    position: relative;
+                    display: grid;
+
+                    .viz-meta {
+                        display: none;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 10px 12px;
+                        background: rgba(0, 0, 0, 0.1);
+                        border-bottom: 1px solid var(--border);
+                        font-size: 13px;
+                        color: var(--muted);
+                        gap: 12px;
+
+                        &.visible {
+                            display: flex;
+                        }
+
+                        .meta-info {
+                            display: flex;
+                            gap: 16px;
+                            align-items: center;
+                        }
+
+                        .timer {
+                            font-family: 'Space Grotesk', monospace;
+                            color: var(--accent-900);
+                            font-size: 16px;
+                        }
+
+                        .controls {
+                            display: flex;
+                            gap: 8px;
+                        }
+                    }
+
+                    #scroll-container {
+                        width: 100%;
+                        height: 100%;
+                        overflow: auto;
+                        background: var(--canvas-bg);
+                    }
+
+                    #overlay {
+                        position: absolute;
+                        inset: 0;
+                        display: grid;
+                        place-items: center;
+                        background: var(--overlay);
+                        color: var(--text);
+                        font-weight: 500;
+                        pointer-events: none;
+                    }
+                }
+            }
+
+            #playback-cursor {
+                transition: none;
+                will-change: auto;
+            }
+
+            @media (max-width: 768px) {
+                body.app-body {
+                    padding: 12px;
+                }
+                header.hero {
+                    grid-template-columns: 1fr;
+                }
+                header.hero .stats {
+                    text-align: left;
+                }
+            }
+        </style>
+    </head>
+    <body class="app-body">
+        <main class="app-shell">
+            <header class="hero">
+                <div>
+                    <h1 class="title">MIDI Visualizer</h1>
+                    <p class="subtitle">
+                        Play MIDI files in the browser with a nice real-time visualization inspired by samizdat's
+                        <em>fuguestate</em>. Drag and drop a MIDI file or click to select one from your computer. For
+                        now this works best with simple MIDI files of at most at most a few thousand notes (less than
+                        10kB files).
+                    </p>
+                </div>
+            </header>
+
+            <section class="controls">
+                <div class="drop-target" id="drop-target">
+                    <label class="label" for="midi-input">Click or drop a MIDI file to get started</label>
+                    <input
+                        type="file"
+                        id="midi-input"
+                        accept="audio/midi, audio/x-midi, application/x-midi, application/octet-stream, .mid, .midi"
+                        class="file-input"
+                    />
+                </div>
+                <p style="margin: 0; font-size: 14px; color: var(--muted); text-wrap: balance">
+                    or try a sample like
+                    <a
+                        href="#"
+                        id="sample-link"
+                        data-url="https://bitmidi.com/uploads/72257.mid"
+                        style="color: var(--accent-900); text-decoration: underline"
+                        >super mario theme</a
+                    >
+                    or
+                    <a
+                        href="#"
+                        id="sample-link-mutopia"
+                        data-url="https://bitmidi.com/uploads/85261.mid"
+                        style="color: var(--accent-900); text-decoration: underline"
+                    >
+                        pirate of the caribbean</a
+                    >
+                    (loaded directly from BitMidi).
+                </p>
+            </section>
+
+            <section class="canvas-card" id="canvas-card">
+                <div class="canvas-shell">
+                    <div class="viz-meta" id="viz-meta">
+                        <div class="controls">
+                            <button id="btn-play" class="btn btn-primary">Play</button>
+                            <button id="btn-stop" class="btn btn-danger">Stop</button>
+                        </div>
+                        <div class="meta-info">
+                            <span id="timer" class="timer">0:00</span>
+                            <span id="note-count">No file loaded</span>
+                        </div>
+                    </div>
+                    <div id="scroll-container">
+                        <canvas id="visualizer-canvas"></canvas>
+                        <div id="overlay"><p>Select a MIDI file to begin</p></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="sources">
+                <h2>Find free MIDI files</h2>
+                <p>
+                    <a href="https://bitmidi.com" target="_blank" rel="noreferrer">BitMidi</a> (~113k general/retro),
+                    <a href="https://www.mutopiaproject.org" target="_blank" rel="noreferrer">Mutopia Project</a>
+                    (public-domain classical),
+                    <a href="https://www.midiworld.com" target="_blank" rel="noreferrer">MidiWorld</a> (classic
+                    archive), <a href="https://www.vgmusic.com" target="_blank" rel="noreferrer">VGMusic</a> (video game
+                    by console),
+
+                    <a href="https://cymatics.fm/collections/free-downloads" target="_blank" rel="noreferrer"
+                        >Cymatics free</a
+                    >
+                    /
+                    <a href="https://unison.audio/pages/free-download-vault" target="_blank" rel="noreferrer"
+                        >Unison free</a
+                    >
+                    (royalty-free packs),
+                    <a href="https://github.com/feross/bitmidi.com" target="_blank" rel="noreferrer">BitMidi source</a>
+                    (raw archive links).
+                </p>
+            </section>
+
+            <section class="sources">
+                <h2>Inspiration</h2>
+                <p>
+                    This project was inspired by
+                    <a href="https://samizdat.co/works/fuguestate" target="_blank" rel="noreferrer">
+                        samizdat drafting co. / fuguestate</a
+                    >, a visual exploration of Bach's musical compositions. His original midi file can be downloaded
+                    from his website at this link:
+                    <a href="https://samizdat.co/works/fuguestate/bwv-578.mid" target="_blank" rel="noreferrer"
+                        >bwv-578.mid</a
+                    >
+                    (even if for the current architecture of the visualizer this may be a bit laggy).
+                </p>
+            </section>
+        </main>
+
+        <script type="module">
+            import { Midi } from 'https://esm.sh/@tonejs/midi'
+            import * as Tone from 'https://esm.sh/tone'
+            import { Canvas, renderCanvasScene, renderPrimitive } from './canvas-dsl.js'
+
+            // --- State ---
+            let currentMidi = null
+            let synth = null
+            let totalDuration = 0
+            let isPlaying = false
+            let animationFrameId = null
+            let flatNotes = []
+            let minPitch = 0
+            let maxPitch = 127
+            let pitchRange = 127
+            let themeColors = {
+                canvasBg: '#0c0f16',
+                grid: '#243143',
+                note: '#f59e0b',
+                cursor: '#22c55e',
+            }
+
+            // --- Elements ---
+            const canvas = document.getElementById('visualizer-canvas')
+            const ctx = canvas.getContext('2d')
+            const scrollContainer = document.getElementById('scroll-container')
+            const btnPlay = document.getElementById('btn-play')
+            const btnStop = document.getElementById('btn-stop')
+            const timerDisplay = document.getElementById('timer')
+            const noteCountDisplay = document.getElementById('note-count')
+            const overlay = document.getElementById('overlay')
+            const vizMeta = document.getElementById('viz-meta')
+            const canvasCard = document.getElementById('canvas-card')
+            const dropTarget = document.getElementById('drop-target')
+            const midiInput = document.getElementById('midi-input')
+            const sampleLink = document.getElementById('sample-link')
+
+            // Make drop target clickable
+            dropTarget.addEventListener('click', () => {
+                midiInput.click()
+            })
+
+            // Sample file loader
+            async function loadSampleMidi(e) {
+                e.preventDefault()
+
+                stopPlayback()
+                showOverlay('Loading sample file…')
+
+                try {
+                    // Resume AudioContext and init synth
+                    if (Tone.context.state !== 'running') {
+                        await Tone.start()
+                    }
+                    initSynth()
+
+                    const response = await fetch(e.target.dataset.url, { mode: 'cors' })
+                    const buffer = await response.arrayBuffer()
+                    const midi = new Midi(buffer)
+                    currentMidi = midi
+                    totalDuration = midi.duration
+
+                    // Flatten notes for rendering
+                    const notes = []
+                    midi.tracks.forEach(t => {
+                        t.notes.forEach(n => {
+                            notes.push({
+                                name: n.name,
+                                midi: n.midi,
+                                time: n.time,
+                                duration: n.duration,
+                                velocity: n.velocity,
+                            })
+                        })
+                    })
+
+                    setupCanvas(notes, totalDuration)
+                    scheduleMusic(midi)
+
+                    hideOverlay()
+                    noteCountDisplay.textContent = `${notes.length} notes`
+                    updateTimer(0)
+                    vizMeta.classList.add('visible')
+                    canvasCard.classList.add('visible')
+                } catch (err) {
+                    console.error(err)
+                    showOverlay('<span style="color: #ef4444;">Failed to load sample file</span>')
+                }
+            }
+
+            // Add listener to all sample links
+            document.querySelectorAll('a[data-url]').forEach(link => {
+                link.addEventListener('click', loadSampleMidi)
+            })
+
+            // Handle drag and drop
+            dropTarget.addEventListener('dragenter', e => {
+                e.preventDefault()
+                e.stopPropagation()
+                dropTarget.classList.add('drag-over')
+            })
+
+            dropTarget.addEventListener('dragleave', e => {
+                e.preventDefault()
+                e.stopPropagation()
+                dropTarget.classList.remove('drag-over')
+            })
+
+            dropTarget.addEventListener('dragover', e => {
+                e.preventDefault()
+                e.stopPropagation()
+            })
+
+            dropTarget.addEventListener('drop', e => {
+                e.preventDefault()
+                e.stopPropagation()
+                dropTarget.classList.remove('drag-over')
+
+                const files = e.dataTransfer.files
+                if (files.length > 0) {
+                    midiInput.files = files
+                    midiInput.dispatchEvent(new Event('change'))
+                }
+            })
+
+            function showOverlay(message) {
+                overlay.style.display = 'grid'
+                overlay.innerHTML = `<p style="color: var(--text); font-weight: 700;">${message}</p>`
+            }
+
+            function hideOverlay() {
+                overlay.style.display = 'none'
+            }
+
+            function refreshColors() {
+                const styles = getComputedStyle(document.documentElement)
+                themeColors.canvasBg = styles.getPropertyValue('--canvas-bg').trim() || themeColors.canvasBg
+                themeColors.grid = styles.getPropertyValue('--grid').trim() || themeColors.grid
+                themeColors.note = styles.getPropertyValue('--note').trim() || themeColors.note
+                themeColors.cursor = styles.getPropertyValue('--cursor').trim() || themeColors.cursor
+            }
+
+            refreshColors()
+
+            const darkQuery = window.matchMedia('(prefers-color-scheme: dark)')
+            darkQuery.addEventListener('change', () => {
+                refreshColors()
+                render()
+            })
+
+            function initSynth() {
+                console.log('Initializing synth')
+
+                // Create synth lazily after user gesture
+                if (synth) return
+                synth = new Tone.PolySynth(Tone.Synth, {
+                    envelope: { attack: 0.02, decay: 0.1, sustain: 0.3, release: 1 },
+                    oscillator: { type: 'triangle' },
+                }).toDestination()
+            }
+
+            Tone.Transport.on('stop', () => {
+                console.log('Transport stopped')
+                if (Tone.Transport.seconds < 1e-6) {
+                    // Already at start, no need to reset again
+                    return
+                }
+
+                resetCursor()
+                isPlaying = false
+                btnPlay.textContent = 'Play'
+                btnPlay.classList.remove('btn-pause')
+                btnPlay.classList.add('btn-primary')
+            })
+
+            // --- Render Logic ---
+
+            function setupCanvas(notes, duration) {
+                if (notes.length === 0) return
+
+                // Store for animation
+                flatNotes = notes
+
+                // 1. Calculate Pitch Bounds
+                minPitch = 127
+                maxPitch = 0
+                notes.forEach(n => {
+                    if (n.midi < minPitch) minPitch = n.midi
+                    if (n.midi > maxPitch) maxPitch = n.midi
+                })
+                minPitch = Math.max(0, minPitch - 2)
+                maxPitch = Math.min(127, maxPitch + 2)
+                pitchRange = maxPitch - minPitch
+
+                // 2. Set Dimensions with device pixel ratio
+                // const dpr = window.devicePixelRatio || 1
+
+                // const SCALE = 100 // pixels per second
+                // const ROW_HEIGHT = 15 // pixels per pitch row
+
+                // const cssWidth = duration * SCALE
+                // const cssHeight = pitchRange * ROW_HEIGHT
+
+                // canvas.style.width = `${cssWidth}px`
+                // canvas.style.height = `${cssHeight}px`
+
+                // canvas.width = cssWidth * dpr
+                // canvas.height = cssHeight * dpr
+
+                // ctx.setTransform(1, 0, 0, 1, 0, 0)
+                // ctx.scale(dpr, dpr)
+
+                // Initial render
+                render()
+            }
+
+            function renderCanvas({ notes, time, duration, playing, pitchRange: { size, min, max } }) {
+                const SCALE = 100 // pixels per second
+                const ROW_HEIGHT = 10 // pixels per pitch row
+
+                const styles = getComputedStyle(document.documentElement)
+                const bgColor = styles.getPropertyValue('--canvas-bg').trim()
+                const gridColor = styles.getPropertyValue('--grid').trim()
+                // const cursorColor = styles.getPropertyValue('--grid').trim()
+                const noteColor = styles.getPropertyValue('--accent-400').trim()
+                const accentDim = styles.getPropertyValue('--accent-600').trim()
+                const accentDark = styles.getPropertyValue('--accent-700').trim()
+
+                const cssWidth = duration * SCALE
+                const cssHeight = size * ROW_HEIGHT
+
+                // Build primitives using Canvas DSL
+                const primitives = []
+
+                // Background
+                primitives.push(Canvas.rect(0, 0, cssWidth, cssHeight).fill(bgColor))
+
+                // 1. Grid Lines
+                for (let i = 0; i <= size; i++) {
+                    const y = i * ROW_HEIGHT
+                    primitives.push(Canvas.line(0, y, cssWidth, y).stroke(gridColor, 1))
+                }
+
+                // 2. Notes
+                const playingNoteDots = []
+                notes.forEach(note => {
+                    const x = note.time * SCALE
+                    const width = note.duration * SCALE
+                    const normalizedPitch = note.midi - min
+                    const yPos = (size - normalizedPitch - 1) * ROW_HEIGHT
+                    const height = ROW_HEIGHT
+
+                    const isPlayingNote = playing && note.time <= time && time < note.time + note.duration
+
+                    primitives.push(
+                        Canvas.roundRect(x, yPos, width, height, 4).fill(isPlayingNote ? noteColor : accentDim),
+                    )
+
+                    // Collect dot coordinates for playing notes
+                    if (isPlayingNote) {
+                        const dotCenterX = x + height / 2
+                        const dotCenterY = yPos + height / 2
+                        playingNoteDots.push({ x: dotCenterX, y: dotCenterY })
+
+                        // primitives.push(Canvas.circle(dotCenterX, dotCenterY, 3).fill(accentDark))
+                    }
+                })
+
+                playingNoteDots.forEach(dot => {
+                    primitives.push(Canvas.circle(dot.x, dot.y, 3).fill(accentDark))
+                })
+
+                // Draw lines between all pairs of playing note dots
+                for (let i = 0; i < playingNoteDots.length; i++) {
+                    for (let j = i + 1; j < playingNoteDots.length; j++) {
+                        const dot1 = playingNoteDots[i]
+                        const dot2 = playingNoteDots[j]
+                        primitives.push(Canvas.line(dot1.x, dot1.y, dot2.x, dot2.y).stroke(accentDark, 1.5))
+                    }
+                }
+
+                // 2b. Highlight currently playing notes
+                // if (playing) {
+                //     notes.forEach(note => {
+                //         if (note.time <= time && time < note.time + note.duration) {
+                //             const x = note.time * SCALE
+                //             const width = note.duration * SCALE
+                //             const normalizedPitch = note.midi - min
+                //             const yPos = (size - normalizedPitch - 1) * ROW_HEIGHT
+                //             const height = ROW_HEIGHT
+                //             const radius = 4
+
+                //             primitives.push(Canvas.roundRect(x, yPos, width, height, radius).stroke(activeNoteColor, 3))
+                //         }
+                //     })
+                // }
+
+                // 3. Cursor
+                if (playing) {
+                    const cursorX = time * SCALE
+                    primitives.push(Canvas.line(cursorX, 0, cursorX, cssHeight).stroke(accentDark, 2))
+                }
+
+                // Return the scene
+                return Canvas.of(primitives, { width: cssWidth, height: cssHeight })
+            }
+
+            function render() {
+                const scene = renderCanvas({
+                    notes: flatNotes,
+                    time: isPlaying ? Tone.Transport.seconds : 0,
+                    duration: totalDuration,
+                    playing: isPlaying,
+                    pitchRange: { size: pitchRange, min: minPitch, max: maxPitch },
+                })
+                renderCanvasScene(ctx, scene)
+            }
+
+            // --- Playback ---
+
+            function scheduleMusic(midi) {
+                Tone.Transport.cancel()
+
+                midi.tracks.forEach(track => {
+                    track.notes.forEach(note => {
+                        Tone.Transport.schedule(time => {
+                            synth.triggerAttackRelease(note.name, note.duration, time, note.velocity)
+                        }, note.time)
+                    })
+                })
+            }
+
+            function resetCursor() {
+                updateTimer(0)
+                render()
+                hideOverlay()
+            }
+
+            function startAnimationLoop() {
+                console.log('Starting animation loop')
+
+                const loop = () => {
+                    if (!isPlaying) return
+
+                    const now = Tone.Transport.seconds
+
+                    // Redraw canvas with cursor
+                    render()
+                    updateTimer(now)
+
+                    // Auto Scroll Logic
+                    scrollToCursor(now)
+
+                    if (now >= totalDuration && Tone.Transport.state === 'started') {
+                        stopPlayback()
+                    } else {
+                        animationFrameId = requestAnimationFrame(loop)
+                    }
+                }
+                animationFrameId = requestAnimationFrame(loop)
+            }
+
+            function scrollToCursor(time) {
+                const containerWidth = scrollContainer.clientWidth
+                const contentWidth = scrollContainer.scrollWidth
+
+                // Calculate current pixel position of the cursor
+                const ratio = contentWidth / totalDuration
+                const currentX = time * ratio
+
+                const currentScroll = scrollContainer.scrollLeft
+
+                // Follow logic
+                if (currentX > currentScroll + containerWidth * 0.8) {
+                    scrollContainer.scrollLeft = currentX - containerWidth * 0.2
+                } else if (currentX < currentScroll) {
+                    scrollContainer.scrollLeft = currentX - containerWidth * 0.2
+                }
+            }
+
+            function updateTimer(seconds) {
+                const m = Math.floor(seconds / 60)
+                const s = Math.floor(seconds % 60)
+                    .toString()
+                    .padStart(2, '0')
+                const totalM = Math.floor(totalDuration / 60)
+                const totalS = Math.floor(totalDuration % 60)
+                    .toString()
+                    .padStart(2, '0')
+                timerDisplay.textContent = `${m}:${s} / ${totalM}:${totalS}`
+            }
+
+            async function togglePlay() {
+                console.log('Toggling play state, isPlaying:', isPlaying)
+
+                // 1. Resume AudioContext first
+                if (Tone.context.state !== 'running') {
+                    await Tone.start()
+                }
+
+                if (isPlaying) {
+                    // Pause
+                    Tone.Transport.pause()
+                    isPlaying = false
+                    cancelAnimationFrame(animationFrameId)
+                    btnPlay.textContent = 'Resume'
+                    btnPlay.classList.remove('btn-pause')
+                    btnPlay.classList.add('btn-primary')
+                } else {
+                    // Play
+
+                    // Start Transport
+                    Tone.Transport.start()
+                    isPlaying = true
+
+                    btnPlay.textContent = 'Pause'
+                    btnPlay.classList.remove('btn-primary')
+                    btnPlay.classList.add('btn-pause')
+
+                    startAnimationLoop()
+                }
+            }
+
+            function stopPlayback() {
+                console.log('Stopping playback')
+
+                Tone.Transport.stop()
+                isPlaying = false
+                cancelAnimationFrame(animationFrameId)
+                scrollContainer.scrollLeft = 0
+                resetCursor()
+                btnPlay.textContent = 'Play'
+                btnPlay.classList.remove('btn-pause')
+                btnPlay.classList.add('btn-primary')
+            }
+
+            // --- Inputs ---
+
+            document.getElementById('midi-input').addEventListener('change', async e => {
+                const file = e.target.files[0]
+                if (!file) return
+
+                stopPlayback()
+                showOverlay('Parsing…')
+
+                try {
+                    // Resume AudioContext and init synth
+                    if (Tone.context.state !== 'running') {
+                        await Tone.start()
+                    }
+                    initSynth()
+
+                    const buffer = await file.arrayBuffer()
+                    const midi = new Midi(buffer)
+                    currentMidi = midi
+                    totalDuration = midi.duration
+
+                    // Flatten notes for rendering
+                    const notes = []
+                    midi.tracks.forEach(t => {
+                        t.notes.forEach(n => {
+                            notes.push({
+                                name: n.name,
+                                midi: n.midi,
+                                time: n.time,
+                                duration: n.duration,
+                                velocity: n.velocity,
+                            })
+                        })
+                    })
+
+                    setupCanvas(notes, totalDuration)
+                    scheduleMusic(midi)
+
+                    hideOverlay()
+                    noteCountDisplay.textContent = `${notes.length} notes`
+                    updateTimer(0)
+                    vizMeta.classList.add('visible')
+                    canvasCard.classList.add('visible')
+                } catch (err) {
+                    console.error(err)
+                    showOverlay('<span style="color: #ef4444;">Invalid MIDI file</span>')
+                }
+            })
+
+            btnPlay.addEventListener('click', togglePlay)
+            btnStop.addEventListener('click', stopPlayback)
+        </script>
+    </body>
+</html>
