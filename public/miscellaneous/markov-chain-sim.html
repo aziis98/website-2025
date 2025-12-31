@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Markov Chain Simulator</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background: #fafafa;
+                height: 100vh;
+                overflow: hidden;
+                color: #333;
+            }
+
+            #app {
+                height: 100%;
+                display: grid;
+                grid-template-columns: 2fr 1fr;
+                gap: 0;
+
+                & > * {
+                    background: white;
+                    border-right: 1px solid #e0e0e0;
+                }
+            }
+
+            #editor-panel {
+                position: relative;
+                overflow: hidden;
+
+                canvas {
+                    display: block;
+                    cursor: crosshair;
+                }
+
+                #instructions {
+                    position: absolute;
+                    top: 0.75rem;
+                    left: 0.75rem;
+                    background: rgba(255, 255, 255, 0.95);
+                    padding: 0.5rem 0.75rem;
+                    border-radius: 0.25rem;
+                    font-size: 0.7rem;
+                    line-height: 1.5;
+                    border: 1px solid #e0e0e0;
+                    color: #666;
+                }
+
+                #edge-editor {
+                    position: absolute;
+                    display: none;
+                    background: white;
+                    border: 2px solid #333;
+                    border-radius: 0.25rem;
+                    padding: 0.5rem;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    z-index: 100;
+
+                    input {
+                        width: 80px;
+                        padding: 0.375rem;
+                        border: 1px solid #e0e0e0;
+                        border-radius: 0.25rem;
+                        font-size: 0.875rem;
+                        font-family: monospace;
+
+                        &:focus {
+                            outline: none;
+                            border-color: #333;
+                        }
+                    }
+
+                    .hint {
+                        font-size: 0.65rem;
+                        color: #666;
+                        margin-top: 0.25rem;
+                    }
+                }
+            }
+
+            #control-panel {
+                padding: 1rem;
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                border-right: none;
+                overflow-y: auto;
+
+                h2 {
+                    color: #333;
+                    font-size: 0.875rem;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                }
+
+                button {
+                    background: #333;
+                    color: white;
+                    border: none;
+                    padding: 0.625rem 1rem;
+                    border-radius: 0.25rem;
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: background 0.15s;
+
+                    &:hover {
+                        background: #000;
+                    }
+
+                    &:active {
+                        transform: scale(0.98);
+                    }
+
+                    &.secondary {
+                        background: #f5f5f5;
+                        color: #333;
+                        border: 1px solid #e0e0e0;
+
+                        &:hover {
+                            background: #e8e8e8;
+                        }
+                    }
+                }
+            }
+
+            #histogram-section {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                min-height: 0;
+            }
+
+            #histogram {
+                background: #fafafa;
+                border-radius: 0.25rem;
+                padding: 0.75rem;
+                border: 1px solid #e0e0e0;
+                height: 200px;
+            }
+
+            #buttons {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0.5rem;
+            }
+
+            #step-buttons {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0.5rem;
+            }
+
+            #trace {
+                background: #fafafa;
+                border-radius: 0.25rem;
+                padding: 0.75rem;
+                font-size: 0.8rem;
+                border: 1px solid #e0e0e0;
+                font-family: monospace;
+                min-height: 40px;
+                color: #333;
+                line-height: 1.6;
+            }
+
+            h3 {
+                color: #666;
+                font-size: 0.75rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <div id="editor-panel">
+                <canvas id="canvas"></canvas>
+                <div id="instructions">
+                    <strong>Double-click empty</strong> to add • <strong>Click node</strong> to set start •
+                    <strong>Double-click node</strong> to delete • <strong>Drag</strong> to move •
+                    <strong>Shift+Drag</strong> to connect • <strong>Click probability</strong> to edit
+                </div>
+                <div id="edge-editor">
+                    <input type="text" id="prob-input" placeholder="0.5" />
+                    <div class="hint">Enter or click outside</div>
+                </div>
+            </div>
+            <div id="control-panel">
+                <h2>Controls</h2>
+                <button id="simulate">Simulate</button>
+
+                <h3>Step Simulation</h3>
+                <div id="step-buttons">
+                    <button class="secondary" id="step-reset">Reset</button>
+                    <button class="secondary" id="step">Step</button>
+                </div>
+                <div id="trace">Double-click node to set start</div>
+
+                <h3>Distribution</h3>
+                <div id="histogram-section">
+                    <canvas id="histogram"></canvas>
+                </div>
+
+                <div id="buttons">
+                    <button class="secondary" id="reset">Reset</button>
+                    <button class="secondary" id="clear">Clear All</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const canvas = document.getElementById('canvas')
+            const ctx = canvas.getContext('2d')
+            const histCanvas = document.getElementById('histogram')
+            const histCtx = histCanvas.getContext('2d')
+            const edgeEditor = document.getElementById('edge-editor')
+            const probInput = document.getElementById('prob-input')
+
+            let nodes = []
+            let edges = []
+            let draggedNode = null
+            let drawingEdge = null
+            let hoveredEdge = null
+            let distribution = {}
+            let hasMoved = false
+            let edgeLabelPositions = []
+            let editingEdge = null
+            let startNode = null
+            let currentNode = null
+            let stepTrace = []
+
+            // Throttled URL updater (1 second)
+            const updateUrlHashThrottled = throttle(updateUrlHash, 1000)
+
+            function resizeCanvas() {
+                const panel = document.getElementById('editor-panel')
+                canvas.width = panel.clientWidth
+                canvas.height = panel.clientHeight
+                draw()
+            }
+
+            function resizeHistogram() {
+                const hist = document.getElementById('histogram')
+                histCanvas.width = hist.clientWidth - 24
+                histCanvas.height = 180
+                drawHistogram()
+            }
+
+            window.addEventListener('resize', () => {
+                resizeCanvas()
+                resizeHistogram()
+            })
+
+            resizeCanvas()
+            resizeHistogram()
+
+            function getMousePos(e) {
+                const rect = canvas.getBoundingClientRect()
+                return {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top,
+                }
+            }
+
+            function findNode(x, y) {
+                return nodes.find(n => {
+                    const dx = n.x - x
+                    const dy = n.y - y
+                    return dx * dx + dy * dy < 625
+                })
+            }
+
+            function findEdgeByLabel(x, y) {
+                for (let pos of edgeLabelPositions) {
+                    const dx = x - pos.x
+                    const dy = y - pos.y
+                    if (dx * dx + dy * dy < 900) {
+                        return pos
+                    }
+                }
+                return null
+            }
+
+            function showEdgeEditor(edge, x, y) {
+                editingEdge = edge
+                edgeEditor.style.display = 'block'
+                edgeEditor.style.left = x + 'px'
+                edgeEditor.style.top = y + 'px'
+                probInput.value = edge.prob
+                probInput.focus()
+                probInput.select()
+            }
+
+            function hideEdgeEditor() {
+                edgeEditor.style.display = 'none'
+                editingEdge = null
+            }
+
+            function saveEdgeProb() {
+                if (!editingEdge) return
+
+                const value = probInput.value.trim()
+                if (value === '') {
+                    hideEdgeEditor()
+                    return
+                }
+
+                try {
+                    const evaluated = value.includes('/')
+                        ? eval(value.replace(/(\d+)\/(\d+)/, '($1/$2)'))
+                        : parseFloat(value)
+
+                    if (!isNaN(evaluated) && evaluated >= 0 && evaluated <= 1) {
+                        editingEdge.prob = evaluated
+                        draw()
+                    }
+                } catch (err) {}
+
+                hideEdgeEditor()
+            }
+
+            probInput.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    saveEdgeProb()
+                } else if (e.key === 'Escape') {
+                    hideEdgeEditor()
+                }
+            })
+
+            probInput.addEventListener('blur', () => {
+                setTimeout(saveEdgeProb, 100)
+            })
+
+            let mouseDownNode = null
+            let mouseDownPos = null
+            let clickTimeout = null
+
+            canvas.addEventListener('mousedown', e => {
+                const pos = getMousePos(e)
+                const node = findNode(pos.x, pos.y)
+                hasMoved = false
+                mouseDownPos = pos
+
+                hideEdgeEditor()
+
+                if (e.shiftKey && node) {
+                    drawingEdge = { from: node, startX: node.x, startY: node.y }
+                } else if (node) {
+                    mouseDownNode = node
+                    draggedNode = node
+                    draggedNode.offsetX = pos.x - node.x
+                    draggedNode.offsetY = pos.y - node.y
+                }
+            })
+
+            canvas.addEventListener('mousemove', e => {
+                const pos = getMousePos(e)
+
+                if (mouseDownPos) {
+                    const dist = Math.sqrt((pos.x - mouseDownPos.x) ** 2 + (pos.y - mouseDownPos.y) ** 2)
+                    if (dist > 5) hasMoved = true
+                }
+
+                if (!draggedNode && !drawingEdge) {
+                    const edgePos = findEdgeByLabel(pos.x, pos.y)
+                    const edge = edgePos ? edgePos.edge : null
+                    if (edge !== hoveredEdge) {
+                        hoveredEdge = edge
+                        canvas.style.cursor = edge ? 'pointer' : 'crosshair'
+                        draw()
+                    }
+                }
+
+                if (drawingEdge) {
+                    drawingEdge.currentX = pos.x
+                    drawingEdge.currentY = pos.y
+                    canvas.style.cursor = 'crosshair'
+                    draw()
+                } else if (draggedNode) {
+                    draggedNode.x = pos.x - draggedNode.offsetX
+                    draggedNode.y = pos.y - draggedNode.offsetY
+                    canvas.style.cursor = 'grabbing'
+                    draw()
+                }
+            })
+
+            canvas.addEventListener('mouseup', e => {
+                const pos = getMousePos(e)
+
+                if (drawingEdge) {
+                    const targetNode = findNode(pos.x, pos.y)
+                    if (targetNode && targetNode !== drawingEdge.from) {
+                        edges.push({
+                            from: drawingEdge.from.id,
+                            to: targetNode.id,
+                            prob: 0.5,
+                        })
+                        draw()
+                    }
+                    drawingEdge = null
+                }
+
+                draggedNode = null
+                mouseDownNode = null
+                mouseDownPos = null
+                canvas.style.cursor = 'crosshair'
+            })
+
+            canvas.addEventListener('click', e => {
+                const pos = getMousePos(e)
+
+                if (hasMoved) return
+                if (e.shiftKey) return
+
+                const edgePos = findEdgeByLabel(pos.x, pos.y)
+                if (edgePos) {
+                    const rect = canvas.getBoundingClientRect()
+                    showEdgeEditor(edgePos.edge, rect.left + edgePos.x + 20, rect.top + edgePos.y - 30)
+                    return
+                }
+
+                const node = findNode(pos.x, pos.y)
+                if (node) {
+                    // Delay single-click action so it doesn't conflict with double-click (which deletes)
+                    if (clickTimeout) clearTimeout(clickTimeout)
+                    clickTimeout = setTimeout(() => {
+                        startNode = node
+                        currentNode = node
+                        stepTrace = [node.label]
+                        updateTrace()
+                        draw()
+                        clickTimeout = null
+                    }, 250)
+                }
+            })
+
+            canvas.addEventListener('dblclick', e => {
+                const pos = getMousePos(e)
+                const node = findNode(pos.x, pos.y)
+
+                // Cancel any pending single-click action
+                if (clickTimeout) {
+                    clearTimeout(clickTimeout)
+                    clickTimeout = null
+                }
+
+                if (node) {
+                    // Delete node on double-click
+                    nodes = nodes.filter(n => n.id !== node.id)
+                    edges = edges.filter(e => e.from !== node.id && e.to !== node.id)
+
+                    // Clear step simulation if deleted node was involved
+                    if (startNode && startNode.id === node.id) {
+                        startNode = null
+                        currentNode = null
+                        stepTrace = []
+                        updateTrace()
+                    } else if (currentNode && currentNode.id === node.id) {
+                        currentNode = startNode
+                        stepTrace = startNode ? [startNode.label] : []
+                        updateTrace()
+                    }
+
+                    draw()
+                } else {
+                    // Add new node on double-click empty space
+                    nodes.push({
+                        id: Date.now(),
+                        x: pos.x,
+                        y: pos.y,
+                        label: String.fromCharCode(65 + (nodes.length % 26)),
+                    })
+                    draw()
+                }
+            })
+
+            // Throttle helper (invokes at most once per `wait` ms, with a trailing invocation)
+            function throttle(func, wait) {
+                let last = 0
+                let timeout = null
+                let pendingArgs = null
+                return function (...args) {
+                    const now = Date.now()
+                    const remaining = wait - (now - last)
+                    pendingArgs = args
+                    if (remaining <= 0) {
+                        if (timeout) {
+                            clearTimeout(timeout)
+                            timeout = null
+                        }
+                        last = now
+                        func.apply(this, args)
+                    } else if (!timeout) {
+                        timeout = setTimeout(() => {
+                            last = Date.now()
+                            timeout = null
+                            func.apply(this, pendingArgs)
+                            pendingArgs = null
+                        }, remaining)
+                    }
+                }
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height)
+                edgeLabelPositions = []
+
+                // Update URL hash without adding history entries when chain changes (throttled to 1s)
+                updateUrlHashThrottled()
+
+                for (let edge of edges) {
+                    const from = nodes.find(n => n.id === edge.from)
+                    const to = nodes.find(n => n.id === edge.to)
+                    if (!from || !to) continue
+
+                    const outEdges = edges.filter(e => e.from === edge.from)
+                    const sumProbs = outEdges.reduce((sum, e) => sum + e.prob, 0)
+                    const isInvalid = Math.abs(sumProbs - 1) > 0.001
+                    const isHovered = hoveredEdge === edge
+
+                    ctx.strokeStyle = isInvalid ? '#ef4444' : isHovered ? '#000' : '#999'
+                    ctx.lineWidth = isHovered ? 3 : 2
+                    ctx.beginPath()
+
+                    const dx = to.x - from.x
+                    const dy = to.y - from.y
+                    const len = Math.sqrt(dx * dx + dy * dy)
+                    const nx = -dy / len
+                    const ny = dx / len
+
+                    const cx = (from.x + to.x) / 2 + nx * 30
+                    const cy = (from.y + to.y) / 2 + ny * 30
+
+                    ctx.moveTo(from.x, from.y)
+                    ctx.quadraticCurveTo(cx, cy, to.x, to.y)
+                    ctx.stroke()
+
+                    const angle = Math.atan2(to.y - cy, to.x - cx)
+                    const arrowLen = 15
+                    const headStartX = to.x - 24 * Math.cos(angle)
+                    const headStartY = to.y - 24 * Math.sin(angle)
+
+                    ctx.beginPath()
+                    ctx.moveTo(headStartX, headStartY)
+                    ctx.lineTo(
+                        headStartX - arrowLen * Math.cos(angle - Math.PI / 7),
+                        headStartY - arrowLen * Math.sin(angle - Math.PI / 7),
+                    )
+                    ctx.lineTo(
+                        headStartX - arrowLen * Math.cos(angle + Math.PI / 7),
+                        headStartY - arrowLen * Math.sin(angle + Math.PI / 7),
+                    )
+                    ctx.closePath()
+                    ctx.fillStyle = isInvalid ? '#ef4444' : isHovered ? '#000' : '#999'
+                    ctx.fill()
+
+                    ctx.fillStyle = isInvalid ? '#ef4444' : isHovered ? '#000' : '#333'
+                    ctx.font = isHovered ? 'bold 13px sans-serif' : '12px sans-serif'
+                    ctx.textAlign = 'center'
+                    ctx.textBaseline = 'middle'
+
+                    const text = edge.prob.toFixed(2)
+                    const metrics = ctx.measureText(text)
+                    const padding = 5
+                    const bgX = cx - metrics.width / 2 - padding
+                    const bgY = cy - 10
+                    const bgW = metrics.width + padding * 2
+                    const bgH = 20
+
+                    ctx.fillStyle = 'white'
+                    ctx.fillRect(bgX, bgY, bgW, bgH)
+
+                    ctx.fillStyle = isInvalid ? '#ef4444' : isHovered ? '#000' : '#333'
+                    ctx.fillText(text, cx, cy)
+
+                    edgeLabelPositions.push({ x: cx, y: cy, edge })
+                }
+
+                if (drawingEdge) {
+                    ctx.strokeStyle = '#333'
+                    ctx.setLineDash([5, 5])
+                    ctx.lineWidth = 2
+                    ctx.beginPath()
+                    ctx.moveTo(drawingEdge.startX, drawingEdge.startY)
+                    ctx.lineTo(drawingEdge.currentX, drawingEdge.currentY)
+                    ctx.stroke()
+                    ctx.setLineDash([])
+                }
+
+                for (let node of nodes) {
+                    // Draw start node ring
+                    if (startNode && node.id === startNode.id) {
+                        ctx.strokeStyle = '#333'
+                        ctx.lineWidth = 3
+                        ctx.beginPath()
+                        ctx.arc(node.x, node.y, 30, 0, Math.PI * 2)
+                        ctx.stroke()
+                    }
+
+                    // Draw current node in light blue
+                    if (currentNode && node.id === currentNode.id) {
+                        ctx.fillStyle = '#7dd3fc'
+                    } else {
+                        ctx.fillStyle = '#333'
+                    }
+
+                    ctx.beginPath()
+                    ctx.arc(node.x, node.y, 24, 0, Math.PI * 2)
+                    ctx.fill()
+
+                    ctx.fillStyle = 'white'
+                    ctx.font = '14px sans-serif'
+                    ctx.textAlign = 'center'
+                    ctx.textBaseline = 'middle'
+                    ctx.fillText(node.label, node.x, node.y)
+                }
+            }
+
+            function simulate() {
+                if (nodes.length === 0) return
+
+                const steps = 10000
+                const counts = {}
+                nodes.forEach(n => (counts[n.id] = 0))
+
+                let current = nodes[Math.floor(Math.random() * nodes.length)].id
+
+                for (let i = 0; i < steps; i++) {
+                    counts[current]++
+
+                    const outEdges = edges.filter(e => e.from === current)
+                    if (outEdges.length === 0) {
+                        current = nodes[Math.floor(Math.random() * nodes.length)].id
+                        continue
+                    }
+
+                    const rand = Math.random()
+                    let cumProb = 0
+                    for (let edge of outEdges) {
+                        cumProb += edge.prob
+                        if (rand < cumProb) {
+                            current = edge.to
+                            break
+                        }
+                    }
+                }
+
+                console.log('Simulation counts:', counts)
+
+                distribution = {}
+                for (let nodeId in counts) {
+                    const node = nodes.find(n => n.id === parseInt(nodeId))
+                    distribution[node.label] = counts[nodeId] / steps
+                }
+
+                drawHistogram()
+                updateTrace()
+            }
+
+            function drawHistogram() {
+                histCtx.clearRect(0, 0, histCanvas.width, histCanvas.height)
+
+                const labels = Object.keys(distribution)
+                if (labels.length === 0) return
+
+                const values = Object.values(distribution)
+                const max = Math.max(...values)
+                const barWidth = histCanvas.width / labels.length
+
+                labels.forEach((label, i) => {
+                    const value = distribution[label]
+                    const height = (value / max) * (histCanvas.height - 30)
+
+                    histCtx.fillStyle = '#333'
+                    histCtx.fillRect(i * barWidth + 4, histCanvas.height - height - 18, barWidth - 8, height)
+
+                    histCtx.fillStyle = '#333'
+                    histCtx.font = '11px sans-serif'
+                    histCtx.textAlign = 'center'
+                    histCtx.fillText(label, i * barWidth + barWidth / 2, histCanvas.height - 4)
+
+                    histCtx.font = '10px sans-serif'
+                    histCtx.fillStyle = '#666'
+                    histCtx.fillText(
+                        (value * 100).toFixed(1) + '%',
+                        i * barWidth + barWidth / 2,
+                        histCanvas.height - height - 22,
+                    )
+                })
+            }
+
+            function updateTrace() {
+                const traceDiv = document.getElementById('trace')
+                if (stepTrace.length === 0) {
+                    traceDiv.textContent = 'Double-click node to set start'
+                } else {
+                    traceDiv.textContent = stepTrace.join(' → ')
+                }
+            }
+
+            function stepSimulation() {
+                if (nodes.length === 0) return
+
+                // If no current node, pick random start
+                if (!currentNode) {
+                    currentNode = nodes[Math.floor(Math.random() * nodes.length)]
+                    startNode = currentNode
+                    stepTrace = [currentNode.label]
+                    updateTrace()
+                    draw()
+                    return
+                }
+
+                // Find outgoing edges
+                const outEdges = edges.filter(e => e.from === currentNode.id)
+
+                if (outEdges.length === 0) {
+                    // No outgoing edges, pick random node
+                    currentNode = nodes[Math.floor(Math.random() * nodes.length)]
+                } else {
+                    // Sample from outgoing edges
+                    const rand = Math.random()
+                    let cumProb = 0
+                    for (let edge of outEdges) {
+                        cumProb += edge.prob
+                        if (rand < cumProb) {
+                            currentNode = nodes.find(n => n.id === edge.to)
+                            break
+                        }
+                    }
+                }
+
+                stepTrace.push(currentNode.label)
+                updateTrace()
+                draw()
+            }
+
+            function resetStepSimulation() {
+                currentNode = startNode
+                stepTrace = startNode ? [startNode.label] : []
+                updateTrace()
+                draw()
+            }
+
+            function encodeChain(nodes, edges, width, height) {
+                if (nodes.length === 0) return ''
+
+                const labels = nodes.map(n => n.label).join('')
+
+                // Buffer Size Calculation:
+                // nodeCount: 1 byte
+                // nodes: nodes.length * (x:1 + y:1) = 2 bytes per node
+                // edgeCount: 1 byte
+                // edges: edges.length * (from:1 + to:1 + prob:1) = 3 bytes per edge
+                const bufferSize = 1 + nodes.length * 2 + 1 + edges.length * 3
+                const buffer = new ArrayBuffer(bufferSize)
+                const view = new DataView(buffer)
+
+                let offset = 0
+
+                // 1. Node Count
+                view.setUint8(offset++, nodes.length)
+
+                // 2. Nodes x, y (Quantized to 1 byte using width/height)
+                for (const n of nodes) {
+                    // Quantize 0->width to 0->255
+                    const qX = Math.max(0, Math.min(255, Math.round((n.x / width) * 255)))
+                    const qY = Math.max(0, Math.min(255, Math.round((n.y / height) * 255)))
+
+                    view.setUint8(offset++, qX)
+                    view.setUint8(offset++, qY)
+                }
+
+                // 3. Edge Count
+                view.setUint8(offset++, edges.length)
+
+                // 4. Edges (Indices: 1 byte, Prob: 1 byte [base 252])
+                for (const e of edges) {
+                    const fromIdx = nodes.findIndex(n => n.id === e.from)
+                    const toIdx = nodes.findIndex(n => n.id === e.to)
+
+                    view.setUint8(offset++, fromIdx)
+                    view.setUint8(offset++, toIdx)
+
+                    const quantizedProb = Math.max(0, Math.min(252, Math.round(e.prob * 252)))
+                    view.setUint8(offset++, quantizedProb)
+                }
+
+                const bytes = new Uint8Array(buffer)
+                const base64 = btoa(String.fromCharCode(...bytes))
+
+                return `${labels}|${base64}`
+            }
+
+            function decodeChain(encoded, width, height) {
+                try {
+                    const [labels, base64] = encoded.split('|')
+                    const binary = atob(base64)
+                    const buffer = new ArrayBuffer(binary.length)
+                    const bytes = new Uint8Array(buffer)
+                    for (let i = 0; i < binary.length; i++) {
+                        bytes[i] = binary.charCodeAt(i)
+                    }
+
+                    const view = new DataView(buffer)
+                    let offset = 0
+
+                    // 1. Read Node Count
+                    const nodeCount = view.getUint8(offset++)
+                    const newNodes = []
+
+                    // 2. Read Nodes (Dequantize using width/height)
+                    const timestamp = Date.now()
+                    for (let i = 0; i < nodeCount; i++) {
+                        const bX = view.getUint8(offset++)
+                        const bY = view.getUint8(offset++)
+
+                        newNodes.push({
+                            id: timestamp + i,
+                            label: labels[i] || String.fromCharCode(65 + i),
+                            x: (bX / 255) * width,
+                            y: (bY / 255) * height,
+                        })
+                    }
+
+                    // 3. Read Edge Count
+                    const edgeCount = view.getUint8(offset++)
+                    const newEdges = []
+
+                    // 4. Read Edges
+                    for (let i = 0; i < edgeCount; i++) {
+                        const fromIdx = view.getUint8(offset++)
+                        const toIdx = view.getUint8(offset++)
+                        const prob = view.getUint8(offset++) / 252
+
+                        newEdges.push({
+                            from: newNodes[fromIdx].id,
+                            to: newNodes[toIdx].id,
+                            prob: prob,
+                        })
+                    }
+
+                    return { nodes: newNodes, edges: newEdges }
+                } catch (e) {
+                    console.error('Failed to decode chain:', e)
+                    return null
+                }
+            }
+
+            function updateUrlHash() {
+                const encoded = encodeChain(nodes, edges, canvas.width, canvas.height)
+                const base = window.location.origin + window.location.pathname + window.location.search
+
+                // If there's nothing to encode, don't clobber an existing hash on initial load
+                if (!encoded) {
+                    if (window.location.hash) return
+                    // nothing to do when there's no hash and no encoded chain
+                    return
+                }
+
+                const newUrl = base + '#' + encoded
+                history.replaceState(null, '', newUrl)
+            }
+
+            // Load from URL on page load
+            function loadFromHash() {
+                console.log('Checking URL hash for graph data')
+
+                const hash = window.location.hash.slice(1)
+                if (!hash) return
+
+                console.log('Loading graph from URL hash')
+
+                const decoded = decodeChain(hash, canvas.width, canvas.height)
+                if (decoded) {
+                    console.log('Decoded chain:', decoded)
+
+                    nodes = decoded.nodes
+                    edges = decoded.edges
+                    startNode = null
+                    currentNode = null
+                    stepTrace = []
+                    distribution = {}
+                    draw()
+                    drawHistogram()
+                    updateTrace()
+                }
+            }
+
+            // Load on initial page load
+            loadFromHash()
+
+            // Handle hash changes (back/forward buttons)
+            window.addEventListener('hashchange', loadFromHash)
+
+            document.getElementById('step').addEventListener('click', stepSimulation)
+            document.getElementById('step-reset').addEventListener('click', resetStepSimulation)
+
+            document.getElementById('simulate').addEventListener('click', simulate)
+
+            document.getElementById('reset').addEventListener('click', () => {
+                distribution = {}
+                drawHistogram()
+            })
+
+            document.getElementById('clear').addEventListener('click', () => {
+                nodes = []
+                edges = []
+                distribution = {}
+                startNode = null
+                currentNode = null
+                stepTrace = []
+                draw()
+                drawHistogram()
+                updateTrace()
+
+                // Explicitly clear URL hash when user clears the graph
+                const base = window.location.origin + window.location.pathname + window.location.search
+                history.replaceState(null, '', base)
+            })
+        </script>
+    </body>
+</html>
