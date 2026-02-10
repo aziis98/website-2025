@@ -14,6 +14,7 @@
     --heading-scale-factor: 1.41;
 
     --card-shadow: 0 0 1rem #0001, 0 0.125rem 0.25rem #0004;
+    --shadow-light: 0 0 0.5rem #00000008, 0 0.25rem 0.5rem #00000008;
 }
 
 @media screen and (width <= 600px) {
@@ -1162,6 +1163,15 @@
         border-radius: 6rem;
 
         box-shadow: var(--card-shadow);
+    }
+
+    .text-editor {
+        font-size: 14px;
+        border-radius: 0.5rem;
+        border: 1px solid #ddd;
+        overflow: clip;
+
+        box-shadow: var(--shadow-light);
     }
 }
 

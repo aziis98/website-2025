@@ -1,0 +1,604 @@
+---
+title: CodeMirror 6 Explainer
+description: An introduction to CodeMirror 6 and how to write extensions for it
+tags: ['lang-en', 'codemirror', 'tutorial']
+publish_date: 2026/01/28
+---
+
+# CodeMirror 6 Explainer
+
+Recently, I've been working on more and more complex web applications and one common component that many of these applications would benefit from is a code editor. For now I have always used a simple textarea without any advanced features or syntax highlighting, but editors are a very important input (and output) device for many use cases.
+
+If you have ever built a web application that includes a text editor, you have a few options to choose from. Some of the most popular ones are:
+
+- Simple **Textarea** (or an element with `contenteditable`) -- The most basic option, it is easy to add automatic resizing and supports copy-paste and undo/redo out of the box, but we cannot easily add advanced features like syntax highlighting, code folding, and autocompletion.
+
+    If you only need a simple text input with autocomplete, HTML has the `<datalist>` element that can be used to provide suggestions for an `<input>` or `<textarea>` element.
+
+- **Ace** -- A popular embeddable code editor with a rich feature set.
+
+- **Monaco** -- This is the editor that powers VS Code, built by Microsoft.
+
+- **CodeMirror** (versions 5 and below)
+
+- **CodeMirror 6**
+
+A notable mention is CodeJar, a lightweight editor library that uses "the overlay trick" to support syntax highlighting in a `contenteditable` element. It is very easy to set up and also provide custom syntax highlighting through Prism.js, Highlight.js or with a custom user provided function.
+
+Most text editor libraries grew organically over time, adding features and complexity in an ad-hoc manner. CodeMirror 6 is the latest iteration of the CodeMirror project, a complete rewrite that was designed from the ground up with a modular architecture in mind that separates state management from rendering and extension logic.
+
+## Basic setup
+
+As most text editor libraries, CodeMirror 6 can be used with a very simple setup. Just provide a DOM element to mount the editor into and some initial content. Here is a minimal example from [the official documentation](https://codemirror.net/examples/basic/):
+
+```ts
+import { basicSetup } from 'codemirror'
+import { EditorView } from '@codemirror/view'
+
+const view = new EditorView({
+    doc: 'Start document',
+    parent: document.body,
+    extensions: [basicSetup],
+})
+```
+
+Differently from other editors, accessing and modifying the content of the editor is more involved than just reading or writing a property. To get the current content of the editor, you can use `view.state.doc.toString()`. To modify it programmatically, you need to dispatch a transaction with the changes you want to apply:
+
+```ts
+// Get current content
+const content = view.state.doc.toString()
+console.log(content)
+
+// Replace all content
+view.dispatch({
+    changes: { from: 0, to: view.state.doc.length, insert: 'New content' },
+})
+```
+
+## Core Concepts
+
+Before diving deeper, let's understand three fundamental concepts in CodeMirror 6: the state, the view, and extensions.
+
+- **State**: The state represents the current document, including its content, selection, and metadata. It is immutable and can be updated with transactions.
+
+- **View**: The view is responsible for rendering the editor in the DOM and handling user interactions. It listens to changes in the state and updates the display accordingly.
+
+- **Commands** are functions that perform specific actions in the editor, such as inserting text, deleting text, or moving the cursor. They can be triggered by user input (like keyboard shortcuts) or programmatically.
+
+These are separated at the module level as well, with `@codemirror/state`, `@codemirror/view`, and `@codemirror/commands` packages.
+
+---
+
+#### Experiments
+
+import { CodeMirrorEditor, createShapePlugin } from '@/components/preact/codemirror'
+
+<figure>
+    <CodeMirrorEditor extensions={[]} client:only />
+</figure>
+
+<figure>
+    <CodeMirrorEditor client:only />
+</figure>
+
+---
+
+#### Claude Suggestions
+
+# CodeMirror 6: A Complete Tutorial
+
+## Introduction
+
+CodeMirror 6 is a powerful, extensible code editor component for the web. Unlike its predecessor, CodeMirror 6 was built from the ground up with a focus on modularity, performance, and customization. This tutorial will guide you through everything from setting up your first editor to building sophisticated custom features.
+
+### Why CodeMirror 6?
+
+CodeMirror 6 offers several advantages that make it ideal for embedding a code editor in your application. It's exceptionally performant even with large documents, supports a modular architecture so you only load what you need, provides excellent accessibility out of the box, and maintains a clean API that's easier to work with than many alternatives.
+
+---
+
+## Part 1: Getting Started
+
+### Installation
+
+The easiest way to start with CodeMirror 6 is through npm. CodeMirror's modular design means you'll install the core editor and then add features as separate packages.
+
+```bash
+npm install @codemirror/basic-setup @codemirror/view @codemirror/state @codemirror/lang-javascript
+```
+
+Here's what each package does: `@codemirror/basic-setup` provides a convenient bundle of commonly used features and extensions, `@codemirror/view` handles the visual rendering and user interaction with the editor, `@codemirror/state` manages the document state and changes, and `@codemirror/lang-javascript` adds syntax highlighting for JavaScript.
+
+### Your First Editor
+
+Let's create a simple editor in an HTML page. Start with a basic HTML structure:
+
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>CodeMirror 6 Editor</title>
+        <style>
+            body {
+                font-family: system-ui, sans-serif;
+                margin: 0;
+                padding: 20px;
+            }
+            #editor {
+                border: 1px solid #ccc;
+                height: 400px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>My First CodeMirror Editor</h1>
+        <div id="editor"></div>
+        <script type="module" src="editor.js"></script>
+    </body>
+</html>
+```
+
+Now create your JavaScript file (`editor.js`):
+
+```javascript
+import { basicSetup } from '@codemirror/basic-setup'
+import { EditorView } from '@codemirror/view'
+
+// Create and mount the editor
+const editor = new EditorView({
+    extensions: [basicSetup],
+    parent: document.getElementById('editor'),
+})
+```
+
+This code creates a new EditorView, which is CodeMirror's main component. The `extensions` array tells it which features to enable, and `parent` specifies where to mount the editor in your DOM. The `basicSetup` extension provides a sensible default configuration with syntax highlighting, line numbers, and search functionality.
+
+**Extensions** are the mechanism for customizing and adding features to your editor. Rather than building a monolithic editor with every feature enabled by default, CodeMirror 6 lets you compose exactly the functionality you need.
+
+---
+
+## Part 2: Working with State and Content
+
+### Reading and Writing Content
+
+To get the current content from your editor, access the doc property of the state:
+
+```javascript
+const currentContent = editor.state.doc.toString()
+console.log(currentContent)
+```
+
+To set the initial content or replace everything, you can create a new state when initializing the editor:
+
+```javascript
+import { EditorState } from '@codemirror/state'
+
+const initialContent = "console.log('Hello, CodeMirror 6!');"
+
+const editor = new EditorView({
+    state: EditorState.create({
+        doc: initialContent,
+        extensions: [basicSetup],
+    }),
+    parent: document.getElementById('editor'),
+})
+```
+
+### Making Programmatic Changes
+
+To modify the editor's content programmatically, you dispatch a transaction. A transaction is how CodeMirror tracks changes—it describes what changed and why. This approach makes it easy to build features like collaborative editing or undo/redo.
+
+```javascript
+// Replace all content
+editor.dispatch({
+    changes: {
+        from: 0,
+        to: editor.state.doc.length,
+        insert: '// New content\nconst x = 42;',
+    },
+})
+
+// Insert text at the cursor position
+const pos = editor.state.selection.main.head
+editor.dispatch({
+    changes: {
+        from: pos,
+        insert: '\n// inserted line',
+    },
+})
+```
+
+The `changes` object specifies a range (`from` and `to`) and the text to `insert`. If you want to replace content, omit `to` or set it to the end position. The `from` property alone creates an insertion point.
+
+### Working with Selections
+
+CodeMirror supports multiple selections, which enables powerful editing features. You can read the current selection and change it:
+
+```javascript
+// Get the main (primary) selection
+const selection = editor.state.selection.main
+console.log(`From ${selection.from} to ${selection.to}`)
+console.log(`Selected text: ${editor.state.sliceDoc(selection.from, selection.to)}`)
+
+// Set a new selection
+editor.dispatch({
+    selection: { anchor: 0, head: 10 },
+})
+```
+
+The selection has an `anchor` (where the selection started) and a `head` (where the cursor currently is). For a selection, they're different; for just a cursor position, they're the same.
+
+---
+
+## Part 3: Syntax Highlighting and Language Support
+
+### Adding Language Syntax Highlighting
+
+CodeMirror 6 uses language extensions to provide syntax highlighting. Each language is its own package. Let's set up JavaScript highlighting:
+
+```javascript
+import { javascript } from '@codemirror/lang-javascript'
+
+const editor = new EditorView({
+    extensions: [basicSetup, javascript()],
+    parent: document.getElementById('editor'),
+})
+```
+
+Other popular languages have similar packages: `@codemirror/lang-python`, `@codemirror/lang-html`, `@codemirror/lang-css`, `@codemirror/lang-json`, and many more. You can check the CodeMirror packages list for a complete set of available language support.
+
+### Understanding Language Grammars
+
+CodeMirror 6 uses Lezer, a parser generator, to create language grammars. These grammars are written in a domain-specific language and compiled into efficient JavaScript parsers. The advantage is that the highlighting is accurate because it's based on actual parsing rather than regex patterns.
+
+When you use a language extension like `javascript()`, it automatically sets up syntax highlighting, indentation rules, code folding, and bracket matching specific to that language.
+
+### Multiple Languages and Embedding
+
+For more complex scenarios where you need multiple languages (like HTML with embedded JavaScript and CSS), CodeMirror provides language mixing:
+
+```javascript
+import { html } from '@codemirror/lang-html'
+
+const editor = new EditorView({
+    extensions: [basicSetup, html()],
+    parent: document.getElementById('editor'),
+})
+```
+
+The HTML language support automatically recognizes and highlights embedded JavaScript and CSS blocks correctly.
+
+---
+
+## Part 4: Themes and Styling
+
+### Using Built-in Themes
+
+CodeMirror comes with several themes that you can apply. Install the theme package and add it to your extensions:
+
+```javascript
+import { oneDark } from '@codemirror/theme-one-dark'
+
+const editor = new EditorView({
+    extensions: [basicSetup, oneDark],
+    parent: document.getElementById('editor'),
+})
+```
+
+Some popular theme packages include `@codemirror/theme-one-dark`, `@codemirror/theme-dracula`, and `@codemirror/theme-solarized-light`. Each theme package exports a theme extension that you add to your extensions array.
+
+### Creating Custom Themes
+
+For more control, you can create your own theme using the `EditorView.theme()` function:
+
+```javascript
+import { EditorView } from '@codemirror/view'
+
+const customTheme = EditorView.theme(
+    {
+        '.cm-content': {
+            'font-family': 'Monaco, monospace',
+            'font-size': '14px',
+        },
+        '.cm-gutters': {
+            'background-color': '#f5f5f5',
+            'border-right': '1px solid #ddd',
+        },
+        '.cm-activeLineGutter': {
+            'background-color': '#e0e0e0',
+        },
+    },
+    { light: true },
+)
+
+const editor = new EditorView({
+    extensions: [basicSetup, customTheme],
+    parent: document.getElementById('editor'),
+})
+```
+
+The theme function takes an object where keys are CSS selectors for different editor elements. The second parameter indicates whether this is a light theme, which helps with automatic styling. Some key selectors include `.cm-content` for the editor content area, `.cm-gutters` for line numbers and folding, `.cm-cursor` for the cursor, and `.cm-selection` for selections.
+
+---
+
+## Part 5: Extensions and Customization
+
+### Understanding Extensions
+
+Extensions are the core mechanism for customizing CodeMirror. An extension can be a theme, a plugin that adds new behavior, a configuration object, or even a state effect. The key insight is that extensions compose—you can combine multiple extensions and they work together seamlessly.
+
+### Creating a Simple Extension
+
+Let's create an extension that logs every change to the console:
+
+```javascript
+import { EditorView } from '@codemirror/view'
+
+// Create an extension that logs changes
+const logChanges = EditorView.updateListener.of(update => {
+    if (update.docChanged) {
+        console.log('Document changed!')
+        console.log('New content:', update.state.doc.toString())
+    }
+})
+
+const editor = new EditorView({
+    extensions: [basicSetup, logChanges],
+    parent: document.getElementById('editor'),
+})
+```
+
+The `EditorView.updateListener` is a facet—a mechanism for listening to editor updates. When the editor updates for any reason (user input, programmatic changes, etc.), your listener callback receives an `update` object containing the old state, new state, and information about what changed.
+
+### Using Facets for Configuration
+
+Facets are how CodeMirror defines extensible configuration points. For example, you can use facets to add key bindings:
+
+```javascript
+import { keymap } from '@codemirror/view'
+import { insertTab } from '@codemirror/commands'
+
+const customKeymap = keymap.of([{ key: 'Tab', run: insertTab }])
+
+const editor = new EditorView({
+    extensions: [basicSetup, customKeymap],
+    parent: document.getElementById('editor'),
+})
+```
+
+This adds custom key bindings to your editor. The `keymap` facet accepts an array of key binding objects, where each object has a `key` property describing the key combination and a `run` property with a function that executes when that key is pressed.
+
+---
+
+## Part 6: Advanced Features
+
+### Autocompletion
+
+Let's add autocompletion to your editor. First, install the completion extension:
+
+```bash
+npm install @codemirror/autocomplete
+```
+
+Then create a completion source and add it to your editor:
+
+```javascript
+import { autocomplete, Completion, CompletionContext } from '@codemirror/autocomplete'
+
+// Create a completion source
+const pythonCompletions = context => {
+    // Get the word being typed before the cursor
+    let word = context.matchBefore(/\w*/)
+
+    if (!word) return null
+    if (word.from === word.to && !context.explicit) return null
+
+    // Return matching completions
+    return {
+        from: word.from,
+        options: [
+            { label: 'def', type: 'keyword' },
+            { label: 'class', type: 'keyword' },
+            { label: 'import', type: 'keyword' },
+            { label: 'print', type: 'function' },
+            { label: 'len', type: 'function' },
+        ],
+    }
+}
+
+// Add completion to the autocomplete extension
+import { autocompletion } from '@codemirror/autocomplete'
+
+const editor = new EditorView({
+    extensions: [basicSetup, autocompletion({ override: [pythonCompletions] })],
+    parent: document.getElementById('editor'),
+})
+```
+
+The completion function receives a context object and returns completions to display. The `matchBefore` method finds text matching a pattern before the cursor, and you return an object with a `from` position and an `options` array of completion objects.
+
+### Linting
+
+To add real-time error checking, use the linting extension:
+
+```bash
+npm install @codemirror/lint
+```
+
+```javascript
+import { linter, Diagnostic } from '@codemirror/lint'
+
+// Create a linter function
+const jsLinter = () => {
+    return view => {
+        let diagnostics = []
+        const content = view.state.doc.toString()
+
+        // Check for common issues (this is a simplified example)
+        if (content.includes('var ')) {
+            diagnostics.push({
+                from: content.indexOf('var '),
+                to: content.indexOf('var ') + 3,
+                severity: 'warning',
+                message: 'Avoid using var, prefer let or const',
+            })
+        }
+
+        return diagnostics
+    }
+}
+
+const editor = new EditorView({
+    extensions: [basicSetup, linter(jsLinter())],
+    parent: document.getElementById('editor'),
+})
+```
+
+The linter function returns a function that receives the editor view and returns an array of diagnostics. Each diagnostic describes an issue with a position, severity level (error, warning, info), and message.
+
+### Code Folding
+
+Code folding is typically included in `basicSetup`, but you can customize it or add it separately:
+
+```javascript
+import { foldGutter, indentationBasedFolding } from '@codemirror/language'
+
+const editor = new EditorView({
+    extensions: [basicSetup, indentationBasedFolding()],
+    parent: document.getElementById('editor'),
+})
+```
+
+Users can click the fold icons in the gutter to collapse and expand code blocks. The fold strategy depends on the language—some use bracket matching, others use indentation.
+
+---
+
+## Part 7: Complete Example Application
+
+Let's bring it all together with a complete, functional code editor:
+
+```javascript
+import { EditorView, basicSetup } from '@codemirror/basic-setup'
+import { EditorState } from '@codemirror/state'
+import { javascript } from '@codemirror/lang-javascript'
+import { oneDark } from '@codemirror/theme-one-dark'
+import { autocompletion } from '@codemirror/autocomplete'
+import { linter } from '@codemirror/lint'
+
+// Define a simple linter
+const jsLinter = () => {
+    return view => {
+        const diagnostics = []
+        return diagnostics
+    }
+}
+
+// Define completions
+const jsCompletions = context => {
+    const word = context.matchBefore(/\w*/)
+    if (!word) return null
+
+    return {
+        from: word.from,
+        options: [
+            { label: 'console.log', type: 'function' },
+            { label: 'const', type: 'keyword' },
+            { label: 'let', type: 'keyword' },
+            { label: 'function', type: 'keyword' },
+        ],
+    }
+}
+
+// Create the editor
+const editor = new EditorView({
+    state: EditorState.create({
+        doc: "// Start coding here\nconst message = 'Hello, CodeMirror 6!';",
+        extensions: [
+            basicSetup,
+            javascript(),
+            oneDark,
+            autocompletion({ override: [jsCompletions] }),
+            linter(jsLinter()),
+            EditorView.updateListener.of(update => {
+                if (update.docChanged) {
+                    updateOutput(update.state.doc.toString())
+                }
+            }),
+        ],
+    }),
+    parent: document.getElementById('editor'),
+})
+
+// Update output display
+function updateOutput(code) {
+    const output = document.getElementById('output')
+    try {
+        // Safety note: Only evaluate in safe contexts!
+        const result = eval(code)
+        output.textContent = 'Result: ' + result
+    } catch (err) {
+        output.textContent = 'Error: ' + err.message
+    }
+}
+```
+
+This example combines multiple features: syntax highlighting for JavaScript, a dark theme, autocompletion, linting, and real-time output evaluation.
+
+---
+
+## Part 8: Best Practices and Performance Tips
+
+### Managing Large Documents
+
+When working with large documents, CodeMirror 6 remains performant, but consider these strategies:
+
+Keep DOM complexity low by using viewport rendering. CodeMirror only renders the visible portion of your document, so large files don't immediately impact performance.
+
+For very large files that receive frequent updates, consider debouncing your update listeners to avoid processing every single change.
+
+Use state effects cautiously in hot code paths. State effects are powerful but can be expensive if called for every keystroke.
+
+### Memory Management
+
+Always clean up your editor when it's no longer needed:
+
+```javascript
+// Remove the editor from the DOM and clean up
+editor.destroy()
+```
+
+If you're creating multiple editors dynamically, destroying old ones prevents memory leaks.
+
+### Accessibility
+
+CodeMirror 6 has excellent accessibility support built in. Always provide appropriate labels and ARIA attributes for your editor container:
+
+```html
+<div id="editor" role="textbox" aria-label="Code editor" aria-multiline="true"></div>
+```
+
+The editor handles keyboard navigation, screen readers, and focus management automatically.
+
+### Security Considerations
+
+Never evaluate user-provided code without careful consideration. If you're running user code (as in our example), do it in a worker thread or sandboxed environment:
+
+```javascript
+// Better: Use a Web Worker
+const worker = new Worker('eval-worker.js')
+worker.postMessage(code)
+worker.onmessage = e => {
+    output.textContent = 'Result: ' + e.data
+}
+```
+
+---
+
+## Conclusion
+
+CodeMirror 6 provides a powerful foundation for building code editors. Its modular architecture means you can start simple and add complexity only as needed. The extension system is sophisticated enough to support advanced features while remaining approachable for common use cases.
+
+The best way to learn is to experiment—start with the basic setup, add language support, customize the theme, and gradually integrate more advanced features like linting and autocompletion. The official documentation and API reference are excellent resources when you need to dive deeper.
+
+Happy coding!
