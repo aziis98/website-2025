@@ -5,9 +5,9 @@ tags: ['python', 'tool', 'pkgver-sorter', 'lang-en']
 publish_date: 2026/01/19
 ---
 
-During the winter break, I found some time and worked on many small projects and this new year started with many more. With AI I'm finally able to focus on small projects that I always wanted to do but never had the time to finish.
+The winter break gave me time to work on several small projects, and things have only picked up pace in the new year. With AI helping things along, I'm finally able to tackle all those smaller projects I've always wanted to finish but never found the time for.
 
-For example the other day I needed to update my Arch Linux system, I'm on Gnome and I use [arch-update](https://extensions.gnome.org/extension/1010/archlinux-updates-indicator/) extension to get notifications about updates. The extension uses the `checkupdates` command behind the scenes to get the list of updates. I noticed that the output of `checkupdates` is just sorted alphabetically by package name, which is not very useful when you have many updates available (even if not really a good practice on Arch Linux).
+For example the other day I needed to update my Arch Linux system, I'm on Gnome and I use the[arch-update](https://extensions.gnome.org/extension/1010/archlinux-updates-indicator/) extension to get notifications about updates. The extension uses the `checkupdates` command behind the scenes to get the list of updates. I noticed that the output of `checkupdates` is just sorted alphabetically by package name, which is not very useful when you have many updates available (even if not really a good practice on Arch).
 
 So I created a simple Python tool called [pkgver-sorter](https://gist.github.com/aziis98/69779039e7f58a3fe70b625577bbbbfa) that sorts the output of `checkupdates` by greatest package version update difference. In the extension settings I can now set the command to `checkupdates | pkgver-sorter` and get a much more useful output. Here is the original output of `checkupdates`:
 
@@ -60,3 +60,5 @@ smbclient 2:4.23.4-1 -> 2:4.23.4-2
 tevent 1:0.17.1-1 -> 1:0.17.1-2
 vulkan-headers 1:1.4.335.0-1 -> 1:1.4.335.0-2
 ```
+
+This is much more useful as I can now see which are the most significant updates at a glance. The only problem is that there are many version string formats so I had to tweak a bit the parsing and the comparison logic and weights to get a good sorting.
