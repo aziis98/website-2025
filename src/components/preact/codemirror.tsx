@@ -1,9 +1,13 @@
-import { minimalSetup } from 'codemirror'
+import { basicSetup, minimalSetup } from 'codemirror'
 
-import { EditorState } from '@codemirror/state'
+import { EditorState, type ChangeSpec, type Extension } from '@codemirror/state'
 import { Decoration, EditorView, ViewPlugin, ViewUpdate, WidgetType, type DecorationSet } from '@codemirror/view'
 
-import { useEffect, useRef } from 'preact/hooks'
+import { useEffect, useRef, useState } from 'preact/hooks'
+
+import { Color, type AllSpace } from '@/lib/colors'
+import { getChunks, unifiedMergeView } from '@codemirror/merge'
+import { ToastDisplay, useToasts } from './toasts'
 
 const $ = (tag: string, attrs: Record<string, any>, children: (HTMLElement | string)[] = []): HTMLElement => {
     const elem = document.createElement(tag)
@@ -52,43 +56,49 @@ const $svg = (tag: string, attrs: Record<string, string>, children: (SVGElement 
     return elem
 }
 
-const SHAPES: Record<string, { createElement: (color: string) => SVGElement }> = {
+const SHAPES: Record<string, { createElement: (color: Color<AllSpace>) => SVGElement }> = {
     ['rectangle']: {
-        createElement: (color: string) =>
+        createElement: (color: Color<AllSpace>) =>
             $svg('rect', {
-                x: '2',
-                y: '2',
-                width: '46',
-                height: '46',
-                rx: '5',
-                fill: color,
-                stroke: 'rgba(0,0,0,0.2)',
+                x: ((32 - 28) / 2).toString(),
+                y: ((32 - 28) / 2).toString(),
+                width: '28',
+                height: '28',
+                rx: '4',
+                fill: color.toHex(),
+                stroke: color.lightness(v => v - 20).toHex(),
                 strokeWidth: '2',
             }),
     },
     ['circle']: {
-        createElement: (color: string) =>
+        createElement: (color: Color<AllSpace>) =>
             $svg('circle', {
-                cx: '25',
-                cy: '25',
-                r: '22',
-                fill: color,
-                stroke: 'rgba(0,0,0,0.2)',
+                cx: '16',
+                cy: '16',
+                r: '14',
+                fill: color.toHex(),
+                stroke: color.lightness(v => v - 20).toHex(),
                 strokeWidth: '2',
             }),
     },
     ['star']: {
-        createElement: (color: string) =>
+        createElement: (color: Color<AllSpace>) =>
             $svg('polygon', {
-                points: '25,2.5 32.5,17.5 48.5,17.5 35.5,27.5 40.5,42.5 25,32.5 9.5,42.5 14.5,27.5 1.5,17.5 17.5,17.5',
-                fill: color,
-                stroke: 'rgba(0,0,0,0.2)',
+                points: Array.from({ length: 10 }, (_, i) => {
+                    const angle = (i * 36 - 90) * (Math.PI / 180)
+                    const radius = i % 2 === 0 ? 14 : 6
+                    const x = 16 + radius * Math.cos(angle)
+                    const y = 16 + radius * Math.sin(angle)
+                    return `${x},${y}`
+                }).join(' '),
+                fill: color.toHex(),
+                stroke: color.lightness(v => v - 20).toHex(),
                 strokeWidth: '2',
             }),
     },
 }
 
-const SUPPORTED_COLORS: Record<string, string> = {
+const SUPPORTED_COLORS_HEX: Record<string, string> = {
     red: '#ef4444',
     blue: '#3b82f6',
     green: '#22c55e',
@@ -115,20 +125,25 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 // This class needs access to the dynamically imported WidgetType.
 class ShapeWidget extends WidgetType {
     shape: string
-    color: string
+    colorHex: string
 
     constructor(shape: string, color: string) {
         super()
         this.shape = shape
-        this.color = color
+        this.colorHex = color
     }
 
     toDOM() {
         const container = $('span', {
-            style: { display: 'inline-block', verticalAlign: 'middle', margin: '0 2px' },
+            style: {
+                display: 'inline-block',
+                verticalAlign: 'middle',
+                margin: '0 2px',
+                height: '32px',
+            },
         })
 
-        const svgShape = $svg('svg', { width: '50', height: '50', viewBox: '0 0 50 50' })
+        const svgShape = $svg('svg', { width: '32', height: '32', viewBox: '0 0 32 32' })
 
         const shapeDef = SHAPES[this.shape]
         if (!shapeDef) {
@@ -137,7 +152,7 @@ class ShapeWidget extends WidgetType {
             return container
         }
 
-        const element = shapeDef.createElement(this.color)
+        const element = shapeDef.createElement(Color.fromHex(this.colorHex))
 
         svgShape.appendChild(element)
         container.appendChild(svgShape)
@@ -145,7 +160,7 @@ class ShapeWidget extends WidgetType {
     }
 
     eq(other: ShapeWidget) {
-        return other.shape === this.shape && other.color === this.color
+        return other.shape === this.shape && other.colorHex === this.colorHex
     }
 
     ignoreEvent() {
@@ -165,6 +180,20 @@ function setupEditor(el: HTMLElement, extensions: any[] = [], content: string = 
     })
 
     return view
+}
+
+function createCodeMirrorEditor(el: HTMLElement, extensions: Extension[] = [], initialContent: string = '') {
+    const state = EditorState.create({
+        doc: initialContent,
+        extensions: [minimalSetup, ...extensions, EditorView.lineWrapping],
+    })
+
+    const view = new EditorView({
+        state,
+        parent: el,
+    })
+
+    return { view, state }
 }
 
 interface CodeMirrorEditorProps {
@@ -204,13 +233,13 @@ export const createShapePlugin = () =>
                         const shape = match[1].toLowerCase()
                         const color = match[2].toLowerCase()
 
-                        if (!['rectangle', 'circle', 'star'].includes(shape) || !SUPPORTED_COLORS[color]) {
+                        if (!['rectangle', 'circle', 'star'].includes(shape) || !SUPPORTED_COLORS_HEX[color]) {
                             continue
                         }
 
                         const isCursorInside = mainSelection.from <= end && mainSelection.to >= start
                         if (!isCursorInside) {
-                            const widget = new ShapeWidget(shape, SUPPORTED_COLORS[color])
+                            const widget = new ShapeWidget(shape, SUPPORTED_COLORS_HEX[color])
                             const hideDecoration = Decoration.replace({}).range(start, end)
                             const widgetDecoration = Decoration.widget({
                                 widget: widget,
@@ -249,4 +278,239 @@ export const CodeMirrorEditor = ({
     }, [extensions, content])
 
     return <div class="text-editor" ref={editorRef} />
+}
+
+export function dedent(str: string): string {
+    const lines = str.split('\n')
+    const minIndent = Math.min(...lines.filter(line => line.trim()).map(line => line.match(/^ */)?.[0].length || 0))
+    return lines
+        .map(line => line.slice(minIndent))
+        .join('\n')
+        .trim()
+}
+
+function createMergeView(parent: HTMLElement, oldState: EditorState, newState: EditorState) {
+    const state = EditorState.create({
+        doc: newState.doc.toString(),
+        extensions: [
+            minimalSetup,
+            EditorView.lineWrapping,
+            unifiedMergeView({
+                original: oldState.doc.toString(),
+                allowInlineDiffs: true,
+            }),
+        ],
+    })
+
+    const view = new EditorView({
+        parent,
+        state: state,
+    })
+
+    return { view, state }
+}
+
+export const CodeMirrorMergeDemo = () => {
+    const editorElOldRef = useRef<HTMLDivElement>(null)
+    const editorElNewRef = useRef<HTMLDivElement>(null)
+    const mergeElRef = useRef<HTMLDivElement>(null)
+
+    const editorOldViewRef = useRef<EditorView | null>(null)
+    const editorNewViewRef = useRef<EditorView | null>(null)
+
+    const mergeEditorViewRef = useRef<EditorView | null>(null)
+
+    function recreateMergeView() {
+        if (!mergeElRef.current || !editorOldViewRef.current || !editorNewViewRef.current) return
+
+        mergeEditorViewRef.current?.destroy()
+        mergeEditorViewRef.current = createMergeView(
+            mergeElRef.current,
+            editorOldViewRef.current.state,
+            editorNewViewRef.current.state,
+        ).view
+    }
+
+    useEffect(() => {
+        if (!editorElOldRef.current || !editorElNewRef.current || !mergeElRef.current) return
+
+        editorOldViewRef.current = createCodeMirrorEditor(
+            editorElOldRef.current,
+            [],
+            dedent(`
+                This is the original document.
+                Just some placeholder content to demonstrate the editor.
+
+                It has multiple lines of text, without anything very interesting.
+                The end.
+            `),
+        ).view
+
+        editorNewViewRef.current = createCodeMirrorEditor(
+            editorElNewRef.current,
+            [],
+            dedent(`
+                This is the modified document.
+                Just some placeholder content to demonstrate the editor.
+
+                It has multiple lines of text, with some changes.
+                The end.
+            `),
+        ).view
+
+        recreateMergeView()
+
+        return () => {
+            editorOldViewRef.current?.destroy()
+            editorNewViewRef.current?.destroy()
+            mergeEditorViewRef.current?.destroy()
+        }
+    }, [])
+
+    return (
+        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+            <div class="section" style={{ flex: '1 1 300px' }}>
+                <strong>Old Version</strong>
+                <div class="text-editor" ref={editorElOldRef} />
+            </div>
+            <div class="section" style={{ flex: '1 1 300px' }}>
+                <strong>New Version</strong>
+                <div class="text-editor" ref={editorElNewRef} />
+            </div>
+            <div class="unified-merge-editor" style={{ flex: '1 1 100%' }}>
+                <strong>Unified Merge View</strong>
+                <button onClick={recreateMergeView}>Recreate</button>
+                <div class="text-editor" style={{ height: '400px' }} ref={mergeElRef} />
+            </div>
+        </div>
+    )
+}
+
+export const CodeMirrorMergeBasicSetupDemo = ({
+    oldDoc = null,
+    newDoc = 'one\n2\nthree\n4',
+    tools = [],
+}: {
+    oldDoc: string | null
+    newDoc?: string
+    tools?: ('searchAndReplace' | 'lorem-ipsum')[]
+}) => {
+    oldDoc ??= newDoc
+
+    const mergeElRef = useRef<HTMLDivElement>(null)
+    const mergeEditorViewRef = useRef<EditorView | null>(null)
+
+    const { toasts, addToast } = useToasts()
+
+    useEffect(() => {
+        if (!mergeElRef.current) return
+
+        const state = EditorState.create({
+            doc: newDoc,
+            extensions: [
+                basicSetup,
+                unifiedMergeView({
+                    original: oldDoc,
+                    allowInlineDiffs: true,
+                }),
+
+                EditorView.updateListener.of(update => {
+                    const newChunkCount = getChunks(update.state)?.chunks.length
+
+                    const tr = update.transactions.find(tr => tr.isUserEvent('accept') || tr.isUserEvent('revert'))
+                    console.log(update)
+                    if (tr) {
+                        const eventType = tr.isUserEvent('accept') ? 'accepted' : 'reverted'
+                        addToast(`The chunk was ${eventType}, now ${newChunkCount} chunk(s) remain.`)
+                    }
+                }),
+            ],
+        })
+
+        mergeEditorViewRef.current = new EditorView({
+            parent: mergeElRef.current,
+            state,
+        })
+
+        return () => {
+            mergeEditorViewRef.current?.destroy()
+        }
+    }, [])
+
+    const [searchText, setSearchText] = useState('')
+    const [replaceText, setReplaceText] = useState('')
+
+    return (
+        <>
+            <div style={{ display: 'grid', gap: '0' }}>
+                <div class="text-editor" ref={mergeElRef} />
+                {tools.length > 0 && (
+                    <div class="tools">
+                        {tools.includes('searchAndReplace') && (
+                            <div class="search-replace">
+                                <strong>Search and Replace</strong>
+                                <input
+                                    type="text"
+                                    placeholder="Search..."
+                                    value={searchText}
+                                    onInput={e => setSearchText(e.currentTarget.value)}
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Replace..."
+                                    value={replaceText}
+                                    onInput={e => setReplaceText(e.currentTarget.value)}
+                                />
+                                <button
+                                    onClick={() => {
+                                        if (!mergeEditorViewRef.current) return
+
+                                        const view = mergeEditorViewRef.current
+
+                                        const changes: ChangeSpec[] = []
+                                        const regex = new RegExp(searchText, 'g')
+
+                                        const docText = view.state.doc.toString()
+                                        for (const match of docText.matchAll(regex)) {
+                                            changes.push({
+                                                from: match.index,
+                                                to: match.index + match[0].length,
+                                                insert: replaceText,
+                                            })
+                                        }
+
+                                        if (changes.length > 0) {
+                                            view.dispatch({ changes })
+                                        }
+                                    }}
+                                >
+                                    Replace All
+                                </button>
+                            </div>
+                        )}
+                        {tools.includes('lorem-ipsum') && (
+                            <button
+                                onClick={() => {
+                                    if (!mergeEditorViewRef.current) return
+                                    const view = mergeEditorViewRef.current
+
+                                    const loremIpsum = dedent(`
+                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+                                    Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                                `)
+
+                                    mergeEditorViewRef.current.dispatch({
+                                        changes: { from: 0, to: view.state.doc.length, insert: loremIpsum },
+                                    })
+                                }}
+                            >
+                                Insert Lorem Ipsum
+                            </button>
+                        )}
+                    </div>
+                )}
+            </div>
+            <ToastDisplay toasts={toasts} />
+        </>
+    )
 }

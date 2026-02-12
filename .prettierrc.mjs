@@ -23,5 +23,11 @@ export default {
                 tabWidth: 2,
             },
         },
+        {
+            files: '*.mdx',
+            options: {
+                printWidth: 80,
+            },
+        }
     ],
 }

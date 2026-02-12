@@ -137,6 +137,13 @@
         margin: 1rem 0;
     }
 
+    figcaption {
+        font-size: 0.8em;
+        color: #666;
+        text-align: center;
+        margin-top: 0.5rem;
+    }
+
     ul,
     ol {
         padding-left: 1.5rem;
@@ -286,8 +293,9 @@
     }
 
     p > code {
-        background: #0001;
-        padding: 0 1px;
+        background: #2041;
+        padding: 2px 2px;
+        border-radius: 4px;
     }
 
     pre:not(:has(.katex)) {
@@ -1165,13 +1173,135 @@
         box-shadow: var(--card-shadow);
     }
 
-    .text-editor {
-        font-size: 14px;
-        border-radius: 0.5rem;
-        border: 1px solid #ddd;
-        overflow: clip;
+    figure {
+        .text-editor {
+            font-size: 14px;
+            border-radius: 0.35rem;
+            border: 1px solid #ddd;
+            overflow: clip;
 
-        box-shadow: var(--shadow-light);
+            box-shadow: var(--shadow-light);
+
+            &:has(+ .tools) {
+                border-bottom-left-radius: 0;
+                border-bottom-right-radius: 0;
+            }
+        }
+
+        .tools {
+            display: grid;
+            grid-auto-flow: row;
+            gap: 0.75rem;
+
+            padding: 0.5rem;
+
+            border-radius: 0.35rem;
+            border: 1px solid #ddd;
+            background: #fafafa;
+
+            box-shadow: var(--shadow-light);
+
+            .text-editor + & {
+                border-top-left-radius: 0;
+                border-top-right-radius: 0;
+                border-top: none;
+            }
+        }
+
+        .search-replace {
+            display: grid;
+            grid-template-columns: auto 1fr 1fr auto;
+            gap: 0.75rem;
+            align-items: center;
+
+            strong {
+                font-size: 14px;
+                color: #555;
+                white-space: nowrap;
+            }
+
+            input {
+                padding: 0.25rem 0.5rem;
+
+                font-size: 14px;
+                font-family: var(--font-monospace);
+
+                border: 1px solid #ccc;
+                border-radius: 0.25rem;
+                background: #fff;
+
+                transition: border-color 120ms ease;
+
+                &:focus {
+                    outline: none;
+                    border-color: hsl(from var(--accent) h s 65%);
+                    box-shadow: 0 0 0 2px hsl(from var(--accent) h s 90%);
+                }
+
+                &::placeholder {
+                    color: #999;
+                }
+            }
+
+            button {
+                padding: 0.25rem 0.5rem;
+
+                font-size: 13px;
+                font-weight: 500;
+
+                background: hsl(from var(--accent) h s 65%);
+                color: #fff;
+
+                border: 1px solid hsl(from var(--accent) h s 65%);
+                border-radius: 0.25rem;
+
+                cursor: pointer;
+                transition: all 120ms ease;
+                white-space: nowrap;
+
+                &:hover {
+                    background: hsl(from var(--accent) h calc(s - 10) 55%);
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                }
+
+                &:active {
+                    transform: translateY(1px);
+                }
+            }
+
+            @media screen and (width <= 768px) {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto auto;
+
+                strong {
+                    text-align: center;
+                }
+            }
+        }
+    }
+
+    .toast-container {
+        position: fixed;
+        bottom: 1rem;
+        right: 1rem;
+        display: grid;
+        gap: 0.5rem;
+        z-index: 1000;
+
+        .toast {
+            background: #333;
+            color: #fff;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+
+            box-shadow: var(--card-shadow);
+
+            display: grid;
+            grid-auto-flow: column;
+
+            gap: 0.25rem;
+            font-size: 14px;
+        }
     }
 }
 
