@@ -1,43 +1,205 @@
 ---
-title: Experiments with the CodeMirror 6 Editor
+title: Experiments with CodeMirror
 description: A collection of some recent experiments with CodeMirror 6, a powerful and flexible code editor library for the web. In this article, we will explore the basics of using CodeMirror 6 and see how to use the merge extension and how to create replacement decorations.
 tags: ['lang-en', 'codemirror']
 publish_date: 2026/02/12
 ---
 
-Recently, I've been working on more and more complex web applications and one common component that many of these applications would benefit from is a small code editor. For now I've always used just simple textareas without any advanced features or syntax highlighting, but editors are a very important input (and output) device for many use cases.
+Recently, I've been working on more and more complex web applications and one common component that many of these applications would benefit from is a nice code editor. For now I've always used just simple (and sad) textareas without any advanced features or syntax highlighting or multiple cursors, but editors are a very important input (and output) device for many use cases.
 
-There are many options to choose from when it comes to text editors for the web, here are some of the most popular ones:
+## Various text editor options
 
-- Simple **Textarea** (or an element with `contenteditable`) -- The most basic option, it is easy to add automatic resizing and supports copy-paste and undo/redo out of the box, but we cannot easily add advanced features like syntax highlighting, code folding, and autocompletion.
+There are many options to choose from when it comes to text editors for the web, here are some of the most popular ones
 
-    If you only need a simple text input with autocomplete, HTML has the `<datalist>` element that can be used to provide suggestions for an `<input>` or `<textarea>` element.
+### Just a `textarea`
 
-- **Ace** -- A popular embeddable code editor with a rich feature set.
+This is just for completeness as this is the most basic option and doesn't require any external libraries and copy-paste and undo/redo work out of the box. This is easy to set up and one can easily add features like auto-resize.
 
-- **Monaco** -- This is the editor that powers VS Code, built by Microsoft.
+Generally for auto-resizing, I do the following
 
-- **CodeMirror** (versions 5 and below)
+```css
+textarea {
+    line-height: 1.5;
+    padding: 0.5rem;
+    max-height: 50vh;
 
-- **CodeMirror 6**
+    resize: none;
 
-A notable mention is CodeJar, a lightweight editor library that uses "the overlay trick" to support syntax highlighting in a `contenteditable` element. It is very easy to set up and also provide custom syntax highlighting through Prism.js, Highlight.js or with a custom user provided function.
+    white-space: pre;
+    overflow-wrap: normal;
+    overflow-x: scroll;
+}
+```
+
+```tsx
+<textarea
+    value={content}
+    onInput={e => setContent(e.currentTarget.value)}
+    rows={Math.max(3, content.split('\n').length)}
+/>
+```
+
+And this is the result
+
+import { TextareaAutoresizeDemo1 } from '@/components/preact/codemirror'
+
+<figure>
+    <TextareaAutoresizeDemo1 client:only />
+</figure>
+
+Another technique is to just use the vertical scroll value of the `<textarea>`
+
+```ts
+function autoResizeTextarea(textarea: HTMLTextAreaElement) {
+    textarea.style.height = 'auto'
+    textarea.style.height = `${textarea.scrollHeight}px`
+}
+```
+
+That has the following effect, this works but can be a bit janky due to the layout shifts caused by the height changes
+
+import { TextareaAutoresizeDemo2 } from '@/components/preact/codemirror'
+
+<figure>
+    <TextareaAutoresizeDemo2 client:only />
+</figure>
+
+If you only need a simple input field with autocomplete, HTML has the native `<datalist>` element that can be used to provide suggestions for an `<input>` or `<textarea>` element.
+
+import { TextInputDatalistDemo } from '@/components/preact/codemirror'
+
+<figure>
+    <TextInputDatalistDemo client:only />
+</figure>
+
+### Other editor libraries
+
+- [**Ace**](https://ace.c9.io/) -- A popular embeddable code editor that's been around since 2010. It supports syntax highlighting for over ~100 languages, has automatic indent and outdent, configurable keyboard shortcuts, and features like code folding and multiple cursors. Ace has been used in Cloud9 IDE, GitHub, and many other platforms. It's a solid choice for general-purpose code editing, though its API can feel a bit dated compared to newer alternatives.
+
+- [**Monaco**](https://microsoft.github.io/monaco-editor/) -- This is the editor that powers VS Code, built by Microsoft. It's the most feature-complete option available, offering IntelliSense, rich semantic and hover information out of the box. Monaco has excellent TypeScript support and can work with the Language Server Protocol. The main drawback is its size—the bundle is quite large, which can impact page load times. It's best suited for complex development environments where you need IDE-like features.
+
+- [**CodeMirror 5**](https://codemirror.net/5/) -- The old version of CodeMirror is a widely used code editor library with a large ecosystem of plugins and extensions. It's mature, stable, and well-documented with solutions available for almost any problem you might encounter. However, its architecture shows its age—the codebase grew organically over many years, making it harder to customize deeply or reason about performance. Version 5.x is still maintained but not actively developed, as the focus has shifted to CodeMirror 6.
+
+- A notable mention is [**CodeJar**](https://medv.io/codejar/), a lightweight editor library that uses "the overlay trick" to support syntax highlighting in a `contenteditable` element. It is very easy to set up and also provide custom syntax highlighting through Prism.js, Highlight.js or with a custom user provided function.
 
 Most text editor libraries grew organically over time, adding features and complexity in an ad-hoc manner. CodeMirror 6 is the latest iteration of the CodeMirror project, a complete rewrite that was designed from the ground up with a modular architecture in mind that separates state management from rendering and command handling.
 
-What's the motivation for this post? Many of the applications I worked on recently could benefit from AI code generation features. _The chat interface model isn't always ideal_; I prefer having LLMs update a document by regenerating it completely or using editing tools. In both cases, users **need to see the diff** between the old and new versions of the document and be able to accept or reject the changes.
+## Codemirror 6
+
+What's the motivation for this post? Many of the applications I worked on recently could benefit from AI code generation features. _The chat interface model isn't always ideal_; I prefer having LLMs update a document by regenerating it completely or by using tool-based editing. In both cases, users **need to see the diff** between the old and the new version of the document and be able to accept or reject each change.
 
 For my use cases, this is currently the most intuitive and precise way to handle external changes while editing both code or prose.
 
-CodeMirror already provides an extension called [codemirror/merge](https://github.com/codemirror/merge) that offers side-by-side and unified diff views, making it well-suited for this use case. In this article, we'll explore the basics of using CodeMirror 6 and how to leverage the merge extension to build a simple code review interface.
+CodeMirror already provides an extension called [codemirror/merge](https://github.com/codemirror/merge) that offers side-by-side and unified diff views, making it well-suited for this use case. In this article, we'll explore the basics of using _CodeMirror 6_ and how to leverage the merge extension to build a simple code review interface.
 
-**TL;DR**: Here is a simple example of how to setup a CodeMirror 6 editor with the merge extension:
+The only problem I have with CodeMirror 6 is that the documentation is very sparse, there are many examples but they are not very detailed and don't explain the core concepts of the library.
+
+![Documentation quadrants](https://docs.divio.com/assets/images/overview-8b21327c9a55ca08c6712f26bda2113c.png)
+
+In terms of the [four documentation quadrants](https://diataxis.fr/), CodeMirror 6 has a lot of "how-to" and "reference" material and a [system guide](https://codemirror.net/docs/guide/) that explains the core concepts, but it lacks good tutorials that incrementally introduce concepts and features in a practical way. This was one of the hardest things for me while learning it, and I hope this article can be a good starting point for anyone interested in using CodeMirror 6 for their projects.
+
+### Basic setup
+
+As most text editor libraries, CodeMirror (from now on I will omit the 6) can be used with a very simple setup. Just provide a _DOM element_ to mount the editor onto and give it some _initial content_. Here is a minimal example from [the official documentation](https://codemirror.net/examples/basic/):
+
+```ts
+import { basicSetup } from 'codemirror'
+import { EditorView } from '@codemirror/view'
+
+const view = new EditorView({
+    parent: document.body,
+    doc: 'Start document',
+    extensions: [basicSetup],
+})
+```
+
+This code is correct but this is already lying a bit but we'll get to this later.
+
+Differently from other editors, accessing and modifying the content of the editor is more involved than just reading or writing a `.value` property. To get the current content of the editor, you can use `view.state.doc.toString()`.
+
+To modify it programmatically, you need to dispatch a **transaction** with all the changes you want to apply, a change is a range of text to replace and the new text to insert in its place. Here is an example of how to replace all the content of the editor with a new string:
+
+```ts
+// Get current content
+const content = view.state.doc.toString()
+console.log(content)
+
+// Replace all content
+view.dispatch({
+    changes: { from: 0, to: view.state.doc.length, insert: 'New content' },
+})
+```
+
+Let's get back to the initial example, the `doc` and `extensions` properties are actually just shorthands for creating an initial state for the editor, here is a more explicit way to write the same code:
+
+```ts
+import { EditorState } from '@codemirror/state'
+import { EditorView, basicSetup } from '@codemirror/view'
+
+const state = EditorState.create({
+    doc: 'Start document',
+    extensions: [basicSetup],
+})
+
+const view = new EditorView({
+    parent: document.body,
+    state,
+})
+```
+
+The first thing to note here is that the `state` object is **immutable**, you cannot modify it directly. On the other hand, state objects have some utility methods that allow you to create **transaction** objects that represent changes to the state, and then you can **dispatch** these transactions to the view to apply the changes. This is a very powerful and flexible way to manage the state of the editor, but it can be a bit overwhelming at first.
+
+To recap, the core concepts of CodeMirror 6 are:
+
+- **State** -- The state represents the current document, including its content, selection, metadata and extensions. It is immutable and can be updated with transactions.
+    - CodeMirror allows **multiple cursors** (and selections), these are represented as multiple selection ranges in the editor, and they are represented as an array of ranges. One of them is the "main" selection and is synchronized with the DOM one.
+
+    - **Extensions** are also part of the state and are the main way to customize the behavior of the editor. They can be passed multiple times and they will be merged together or deduplicated.
+
+- **View** -- The view is responsible for rendering the editor in the DOM and handling user interactions. It processes transactions dispatched to it and updates the view accordingly.
+
+- **Commands** are functions that perform specific actions in the editor, such as inserting text, deleting text, or moving the cursor. They can be triggered by user input (like keyboard shortcuts) or programmatically.
+
+These are separated at the module level as well, with `@codemirror/state`, `@codemirror/view`, and `@codemirror/commands` packages.
+
+Another important concept is that of **facets**, which are the main way CodeMirror lets extensions interact with each other and with the editor. Here are some examples from the documentation:
+
+> The idea behind facets is that most types of extension points allow multiple inputs, but want to compute some coherent combined value from those. How that combining works may differ.
+>
+> - For something like **tab size**, you need a single output value. So that facet takes the value with the highest precedence and uses that.
+> - When providing **event handlers**, you want the handlers as an array, sorted by precedence, so that you can try them one at a time until one of them handles the event.
+> - Another common pattern is to compute the **logical or of the input values** (as in allowMultipleSelections) or reduce them in some other way (say, taking the maximum of the requested undo history depths).
+>
+> Source: [https://codemirror.net/docs/guide/#facets](https://codemirror.net/docs/guide/#facets)
+
+It's still not completely clear to me how to facets work behind the scenes, what I got is that they are the thing that is cached and recomputed only when the relevant inputs of a facet change (i.e. [signals](https://preactjs.com/blog/introducing-signals/), but like React `useEffect` they take an explicit dependency array). So they are the "nodes" in the DAG of cached computations that CodeMirror uses to optimize the performance of the editor.
+
+> In a given configuration, most facets tend to be **static**, provided only directly as part of the configuration. But it is also possible to have facet values **computed** from other aspects of the state.
+>
+> ```ts
+> let info = Facet.define<string>()
+> ...
+> extensions: [
+>     info.of('hello'),
+>     info.compute(['doc'], state => `lines: ${state.doc.lines}`),
+> ],
+> ...
+> console.log(state.facet(info))
+> // ["hello", "lines: 2"]
+> ```
+>
+> [...] Facet values are only recomputed when necessary, so you can use an object or array identity test to cheaply check whether a facet changed.
+
+### The Merge Extension
+
+Here is a basic example of how to setup a CodeMirror with the unified merge extension:
 
 ```ts
 import { EditorState, EditorView, basicSetup } from 'codemirror'
 import { unifiedMergeView } from '@codemirror/merge'
 
-const state = EditorState.create({
+const view = new EditorView({
+    parent: document.body,
     doc: 'one\ntwo\nthree\nfour',
     extensions: [
         basicSetup,
@@ -46,11 +208,6 @@ const state = EditorState.create({
             allowInlineDiffs: true,
         }),
     ],
-})
-
-const view = new EditorView({
-    parent,
-    state,
 })
 ```
 
@@ -78,12 +235,14 @@ import {
     <figcaption>Try this out!</figcaption>
 </figure>
 
-And if you want to update the current content of the diff editor programmatically, you can do as follows:
+By default this view shows the diff between the "current" content and an "original" provided content. All changes are made to the "current" content, so to update the diff you just need to dispatch updates as always and the diff view will update accordingly.
+
+For example to add a simple regex find and replace tool, you can do something like this:
 
 ```ts
-function searchAndReplace(editorView, searchText, replaceText) {
+function findAndReplace(editorView, findText, replaceText) {
     const changes: ChangeSpec[] = []
-    const regex = new RegExp(searchText, 'g')
+    const regex = new RegExp(findText, 'g')
 
     const docText = editorView.state.doc.toString()
     for (const match of docText.matchAll(regex)) {
@@ -108,7 +267,7 @@ function searchAndReplace(editorView, searchText, replaceText) {
             three
             four
         `)}
-        tools={['searchAndReplace', 'lorem-ipsum']}
+        tools={['findAndReplace']}
         client:only
     />
     <figcaption>
@@ -116,90 +275,59 @@ function searchAndReplace(editorView, searchText, replaceText) {
     </figcaption>
 </figure>
 
-## Basic setup
+This works fine as a diff editor, but I would like to make this more like the VSCode code review interface, where after the user accepts or rejects all the changes, the diff "mode" is disabled and the user can continue editing the document as normal. This is not the default behavior of the merge view, but we can achieve this by conditionally applying the `unifiedDiff` extension.
 
-As most text editor libraries, CodeMirror 6 can be used with a very simple setup. Just provide a DOM element to mount the editor into and some initial content. Here is a minimal example from [the official documentation](https://codemirror.net/examples/basic/):
+We need to define this concept of the "review mode" in our application state, let's first start from detecting when the user accepts or rejects a change in the merge view, and then we will use this information to disable the diff view when there are no more changes to review.
+
+#### Monitoring Merge View Interactions
+
+This can be achieved by using an `EditorView.updateListener` **extension** that listens for transactions with the `accept` or `revert` user events, which are emitted by the unified merge view. This was one of the things that wasn't documented in the merge view documentation (I found this out by giving Gemini the `@codemirror/merge` and asking it how to detect this).
 
 ```ts
-import { basicSetup } from 'codemirror'
-import { EditorView } from '@codemirror/view'
+EditorView.updateListener.of(update => {
+    const tr = update.transactions.find(
+        tr => tr.isUserEvent('accept') || tr.isUserEvent('revert'),
+    )
 
-const view = new EditorView({
-    doc: 'Start document',
-    parent: document.body,
-    extensions: [basicSetup],
+    if (tr) {
+        const remainingChunks = getChunks(update.state)?.chunks.length
+
+        const eventType = transaction.isUserEvent('accept')
+            ? 'accepted'
+            : 'reverted'
+
+        console.log(`Chunk ${eventType}! ${remainingChunks} remaining.`)
+    }
 })
 ```
 
-Differently from other editors, accessing and modifying the content of the editor is more involved than just reading or writing a property. To get the current content of the editor, you can use `view.state.doc.toString()`. To modify it programmatically, you need to dispatch a transaction with the changes you want to apply:
+The `getChunks()` function from `@codemirror/merge` gives you access to the current diff chunks, and allows use to determine how many changes are left to review.
 
-```ts
-// Get current content
-const content = view.state.doc.toString()
-console.log(content)
+<figure>
+    <CodeMirrorMergeBasicSetupDemo
+        oldDoc={dedent(`
+            one
+            two
+            three
+            four
+        `)}
+        newDoc={dedent(`
+            one
+            2
+            three
+            4
+        `)}
+        debugToasts={true}
+        client:only
+    />
+    <figcaption>
+        This will show a toast message when a chunk is accepted or reverted.
+    </figcaption>
+</figure>
 
-// Replace all content
-view.dispatch({
-    changes: { from: 0, to: view.state.doc.length, insert: 'New content' },
-})
-```
+#### Compartments
 
-## Core Concepts
-
-Before diving deeper, let's understand three fundamental concepts in CodeMirror 6: the state, the view, and extensions.
-
-- **State**: The state represents the current document, including its content, selection, and metadata. It is immutable and can be updated with transactions.
-
-- **View**: The view is responsible for rendering the editor in the DOM and handling user interactions. It listens to changes in the state and updates the display accordingly.
-
-- **Commands** are functions that perform specific actions in the editor, such as inserting text, deleting text, or moving the cursor. They can be triggered by user input (like keyboard shortcuts) or programmatically.
-
-These are separated at the module level as well, with `@codemirror/state`, `@codemirror/view`, and `@codemirror/commands` packages.
-
-## Monitoring Merge View Interactions
-
-When using the merge view for code review or AI-generated changes, you often want to track user interactions—specifically when they accept or reject changes. CodeMirror 6's update listener system makes this straightforward.
-
-The merge view emits user events when chunks are accepted or reverted. You can listen to these events using `EditorView.updateListener`:
-
-```ts
-import { getChunks, unifiedMergeView } from '@codemirror/merge'
-
-const state = EditorState.create({
-    doc: newContent,
-    extensions: [
-        basicSetup,
-        unifiedMergeView({
-            original: oldContent,
-            allowInlineDiffs: true,
-        }),
-
-        // Listen for accept/revert events
-        EditorView.updateListener.of(update => {
-            const remainingChunks = getChunks(update.state)?.chunks.length
-
-            const transaction = update.transactions.find(
-                tr => tr.isUserEvent('accept') || tr.isUserEvent('revert'),
-            )
-
-            if (transaction) {
-                const eventType = transaction.isUserEvent('accept')
-                    ? 'accepted'
-                    : 'reverted'
-                console.log(
-                    `Chunk ${eventType}! ${remainingChunks} chunk(s) remaining.`,
-                )
-
-                // You can trigger UI updates, analytics, or other side effects here
-            }
-        }),
-    ],
-})
-```
-
-The `getChunks()` function from `@codemirror/merge` gives you access to the current diff chunks, allowing you to determine how many changes are left to review.
-
-The next step is to enable or disable the unified diff view based on the current state of the editor. For example, by default, you might want to show the classic editor view without the unified diff mode, and only enable it after an edit the user needs to review. We can achieve this by conditionally applying the `unifiedDiff` extension using **compartments**, which allow us to "reconfigure" parts of the editor configuration dynamically.
+The next step is to enable or disable the unified diff view based on the current state of the editor. We can achieve this by conditionally applying the `unifiedDiff` extension using **compartments**, which allow us to "reconfigure" parts of the editor configuration dynamically.
 
 We can create a new "extension type" for this compartment as follows:
 
@@ -207,13 +335,68 @@ We can create a new "extension type" for this compartment as follows:
 export const unifiedDiffCompartment = new Compartment()
 ```
 
-Then we can instanciate this as empty using `unifiedDiffCompartment.of([])` in the initial editor configuration, and later reconfigure it to enable the unified diff view when needed:
+Then we can instanciate this as empty using `unifiedDiffCompartment.of([])` in the initial editor configuration, and later **reconfigure** it to enable the unified diff view when needed:
 
 ```ts
 view.dispatch({
-    effects: unifiedDiffCompartment.reconfigure(enabled ? unifiedMergeView(...) : []),
+    effects: unifiedDiffCompartment.reconfigure(
+        enabled ? unifiedMergeView(...) : []
+    ),
 })
 ```
+
+import { CodeMirrorToggleMergeModeDemo } from '@/components/preact/codemirror'
+
+<figure>
+    <CodeMirrorToggleMergeModeDemo
+        oldDoc={dedent(`
+            one
+            two
+            three
+            four
+        `)}
+        newDoc={dedent(`
+            one
+            2
+            three
+            4
+        `)}
+        client:only
+    />
+    <figcaption>Try to enter and exit the review mode</figcaption>
+</figure>
+
+#### Let's put it all together
+
+Let's now create a final editor that has all this pieces together.
+
+TODO
+
+### Custom Decorations
+
+The last experiment I want to show is how to create custom decorations. This is useful for example to create a plugin that highlights some custom syntax in the editor, add line decorations, or add custom widgets to the editor.
+
+TODO
+
+<figure>
+    <CodeMirrorEditor client:only />
+    <figcaption>
+        This editor has a custom svg shapes plugin that renders inline shapes in
+        angle brackets
+    </figcaption>
+</figure>
+
+TODO
+
+### Lezer
+
+As if that wasn't enough, CodeMirror 6 also has its own parser system called Lezer that allows you to create custom parsers for your language and use them in the editor to get syntax highlighting, indentation, and other features. This is a very powerful feature that allows you to create a fully customized editing experience for your specific use case.
+
+TODO
+
+### LSP Integration
+
+Lastly, I want to experiment with the Language Server Protocol (LSP) extension. Let's build a simple LSP client that suggests variations of the current word near the cursor, for example let's say we want to suggest the current word converted various cases (camelCase, snake_case, kebab-case, etc).
 
 ---
 
@@ -244,3 +427,7 @@ A unified merge view with some example content. Try to accept or reject the chan
 </figure>
 
 ---
+
+```
+
+```

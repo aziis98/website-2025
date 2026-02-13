@@ -1,12 +1,12 @@
 import { basicSetup, minimalSetup } from 'codemirror'
 
-import { EditorState, type ChangeSpec, type Extension } from '@codemirror/state'
+import { Compartment, EditorState, Text, type ChangeSpec, type Extension } from '@codemirror/state'
 import { Decoration, EditorView, ViewPlugin, ViewUpdate, WidgetType, type DecorationSet } from '@codemirror/view'
 
 import { useEffect, useRef, useState } from 'preact/hooks'
 
 import { Color, type AllSpace } from '@/lib/colors'
-import { getChunks, unifiedMergeView } from '@codemirror/merge'
+import { getChunks, getOriginalDoc, unifiedMergeView } from '@codemirror/merge'
 import { ToastDisplay, useToasts } from './toasts'
 
 const $ = (tag: string, attrs: Record<string, any>, children: (HTMLElement | string)[] = []): HTMLElement => {
@@ -389,11 +389,15 @@ export const CodeMirrorMergeDemo = () => {
 export const CodeMirrorMergeBasicSetupDemo = ({
     oldDoc = null,
     newDoc = 'one\n2\nthree\n4',
+
+    debugToasts = false,
     tools = [],
 }: {
     oldDoc: string | null
     newDoc?: string
-    tools?: ('searchAndReplace' | 'lorem-ipsum')[]
+
+    debugToasts: boolean
+    tools: ('findAndReplace' | 'lorem-ipsum')[]
 }) => {
     oldDoc ??= newDoc
 
@@ -421,7 +425,10 @@ export const CodeMirrorMergeBasicSetupDemo = ({
                     console.log(update)
                     if (tr) {
                         const eventType = tr.isUserEvent('accept') ? 'accepted' : 'reverted'
-                        addToast(`The chunk was ${eventType}, now ${newChunkCount} chunk(s) remain.`)
+
+                        if (debugToasts) {
+                            addToast(`The chunk was ${eventType}, now ${newChunkCount} chunk(s) remain.`)
+                        }
                     }
                 }),
             ],
@@ -437,7 +444,7 @@ export const CodeMirrorMergeBasicSetupDemo = ({
         }
     }, [])
 
-    const [searchText, setSearchText] = useState('')
+    const [findText, setFindText] = useState('')
     const [replaceText, setReplaceText] = useState('')
 
     return (
@@ -446,14 +453,14 @@ export const CodeMirrorMergeBasicSetupDemo = ({
                 <div class="text-editor" ref={mergeElRef} />
                 {tools.length > 0 && (
                     <div class="tools">
-                        {tools.includes('searchAndReplace') && (
-                            <div class="search-replace">
-                                <strong>Search and Replace</strong>
+                        {tools.includes('findAndReplace') && (
+                            <div class="find-replace">
+                                <strong>Find & Replace</strong>
                                 <input
                                     type="text"
-                                    placeholder="Search..."
-                                    value={searchText}
-                                    onInput={e => setSearchText(e.currentTarget.value)}
+                                    placeholder="Find..."
+                                    value={findText}
+                                    onInput={e => setFindText(e.currentTarget.value)}
                                 />
                                 <input
                                     type="text"
@@ -468,7 +475,7 @@ export const CodeMirrorMergeBasicSetupDemo = ({
                                         const view = mergeEditorViewRef.current
 
                                         const changes: ChangeSpec[] = []
-                                        const regex = new RegExp(searchText, 'g')
+                                        const regex = new RegExp(findText, 'g')
 
                                         const docText = view.state.doc.toString()
                                         for (const match of docText.matchAll(regex)) {
@@ -512,5 +519,174 @@ export const CodeMirrorMergeBasicSetupDemo = ({
             </div>
             <ToastDisplay toasts={toasts} />
         </>
+    )
+}
+
+const unifiedDiffCompartment = new Compartment()
+
+export const CodeMirrorToggleMergeModeDemo = ({
+    oldDoc = null,
+    newDoc = 'one\n2\nthree\n4',
+}: {
+    oldDoc: string | null
+    newDoc?: string
+}) => {
+    oldDoc ??= newDoc
+
+    const [reviewMode, setReviewMode] = useState(true)
+
+    const originalDocRef = useRef<Text>(Text.of(oldDoc.split('\n')))
+
+    const editorElementRef = useRef<HTMLDivElement>(null)
+    const editorViewRef = useRef<EditorView | null>(null)
+
+    useEffect(() => {
+        if (!editorElementRef.current) return
+
+        const state = EditorState.create({
+            doc: newDoc,
+            extensions: [
+                basicSetup,
+                unifiedDiffCompartment.of([
+                    unifiedMergeView({
+                        original: oldDoc,
+                        allowInlineDiffs: true,
+                    }),
+                ]),
+            ],
+        })
+
+        editorViewRef.current = new EditorView({
+            parent: editorElementRef.current,
+            state,
+        })
+
+        return () => {
+            editorViewRef.current?.destroy()
+        }
+    }, [])
+
+    useEffect(() => {
+        if (!editorViewRef.current) return
+
+        const view = editorViewRef.current
+
+        if (!reviewMode) {
+            const original = getOriginalDoc(view.state)
+            console.log('Original doc from state:', original)
+
+            originalDocRef.current = original
+        }
+
+        view.dispatch({
+            effects: unifiedDiffCompartment.reconfigure(
+                reviewMode
+                    ? [
+                          unifiedMergeView({
+                              original: originalDocRef.current.toString(),
+                              allowInlineDiffs: true,
+                          }),
+                      ]
+                    : [],
+            ),
+        })
+    }, [reviewMode])
+
+    return (
+        <>
+            <div style={{ display: 'grid', gap: '0' }}>
+                <div class="tools">
+                    <button onClick={() => setReviewMode(v => !v)}>
+                        {reviewMode ? 'Exit Review Mode' : 'Enter Review Mode'}
+                    </button>
+                </div>
+                <div class="text-editor" ref={editorElementRef} />
+            </div>
+        </>
+    )
+}
+
+export const TextareaAutoresizeDemo1 = () => {
+    const [content, setContent] = useState('Start typing...\nThis textarea will grow with your content.')
+
+    return (
+        <textarea
+            value={content}
+            onInput={e => setContent(e.currentTarget.value)}
+            rows={Math.max(3, content.split('\n').length)}
+            style={{
+                width: '100%',
+
+                resize: 'none',
+
+                whiteSpace: 'pre',
+                overflowWrap: 'normal',
+                overflowX: 'scroll',
+            }}
+        />
+    )
+}
+
+export const TextareaAutoresizeDemo2 = () => {
+    const [content, setContent] = useState('Start typing...\nThis textarea will grow with your content.')
+    const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+    useEffect(() => {
+        const textarea = textareaRef.current
+        if (!textarea) return
+
+        requestAnimationFrame(() => {
+            // Check if we need to shrink
+            if (textarea.scrollHeight < textarea.clientHeight) {
+                textarea.style.height = 'auto'
+            }
+
+            textarea.style.height = `${textarea.scrollHeight}px`
+        })
+    }, [content])
+
+    return (
+        <textarea
+            ref={textareaRef}
+            value={content}
+            onInput={e => setContent(e.currentTarget.value)}
+            style={{
+                width: '100%',
+                resize: 'none',
+                overflow: 'hidden', // Prevents scrollbar flash
+                minHeight: '3rem', // Instead of rows
+            }}
+        />
+    )
+}
+
+export const TextInputDatalistDemo = () => {
+    const [value, setValue] = useState('')
+    const options = ['Apple', 'Banana', 'Cherry', 'Date', 'Elderberry']
+
+    return (
+        <div
+            style={{
+                display: 'grid',
+                placeContent: 'center',
+            }}
+        >
+            <input
+                type="text"
+                list="fruits"
+                value={value}
+                onInput={e => setValue(e.currentTarget.value)}
+                placeholder="Type to search fruits..."
+                style={{
+                    width: '512px',
+                    maxWidth: '100%',
+                }}
+            />
+            <datalist id="fruits">
+                {options.map(option => (
+                    <option value={option} key={option} />
+                ))}
+            </datalist>
+        </div>
     )
 }
