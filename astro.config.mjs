@@ -7,6 +7,8 @@ import icon from 'astro-icon'
 import mdx from '@astrojs/mdx'
 import remarkMath from 'remark-math'
 
+import rehypeExternalLinks from 'rehype-external-links'
+
 // https://astro.build/config
 export default defineConfig({
     vite: {
@@ -18,6 +20,7 @@ export default defineConfig({
     devToolbar: { enabled: false },
     markdown: {
         remarkPlugins: [remarkMath],
+        rehypePlugins: [[rehypeExternalLinks, { target: '_blank', rel: ['noopener'] }]],
         shikiConfig: {
             themes: {
                 light: 'github-light',
@@ -36,6 +39,7 @@ export default defineConfig({
         icon(),
         mdx({
             remarkPlugins: [remarkMath],
+            rehypePlugins: [[rehypeExternalLinks, { target: '_blank', rel: ['noopener'] }]],
             shikiConfig: {
                 themes: {
                     light: 'github-light',
