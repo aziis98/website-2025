@@ -142,9 +142,23 @@ function range(min: number, max: number): number[] {
 const SPROUT_DIE_CHANCE = 0.01
 const SPROUT_BORN_CHANCE = 0.5
 
+type PixelartAutomataOptions = {
+    sproutDieChance: number
+    sproutBornChance: number
+}
+
 type Sprout = { x: number; y: number; direction: number }
 
-const createPixelartAutomata = (initialSprouts: Sprout[], grid: Grid<'filled'>, width: number, height: number) => {
+const createPixelartAutomata = (
+    initialSprouts: Sprout[],
+    grid: Grid<'filled'>,
+    width: number,
+    height: number,
+    options: Partial<PixelartAutomataOptions> = {},
+) => {
+    const sproutDieChance = options.sproutDieChance ?? SPROUT_DIE_CHANCE
+    const sproutBornChance = options.sproutBornChance ?? SPROUT_BORN_CHANCE
+
     const sprouts = [...initialSprouts]
 
     // horizontally spaced sprouts
@@ -201,7 +215,7 @@ const createPixelartAutomata = (initialSprouts: Sprout[], grid: Grid<'filled'>, 
                     const stepY = sprout.y + allDirections[sprout.direction].y * i
 
                     if (grid.has(stepX, stepY) || stepX < 0 || stepX > width || stepY < 0 || stepY >= height) {
-                        if (Math.random() < SPROUT_DIE_CHANCE) {
+                        if (Math.random() < sproutDieChance) {
                             toRemove.push(sprout)
                         }
 
@@ -244,7 +258,7 @@ const createPixelartAutomata = (initialSprouts: Sprout[], grid: Grid<'filled'>, 
             }
 
             // occasionally add new sprouts to the grid
-            if (Math.random() < SPROUT_BORN_CHANCE) {
+            if (Math.random() < sproutBornChance) {
                 const filledCells = grid.allCells().filter(cell => cell.x % 2 === 0 && cell.y % 2 === 0)
 
                 if (filledCells.length > 0) {
@@ -303,7 +317,13 @@ const renderPixelart = (
     ctx: CanvasRenderingContext2D,
     updateInterval: number,
     stopTimeout: number,
-    { cellSize, cellColor, spawnLocation }: PixelartOptions,
+    {
+        cellSize,
+        cellColor,
+        spawnLocation,
+        sproutDieChance,
+        sproutBornChance,
+    }: PixelartOptions & Partial<PixelartAutomataOptions>,
 ) => {
     cellSize ??= 5
     cellColor ??= '#dddddd06'
@@ -348,7 +368,10 @@ const renderPixelart = (
     }
 
     const grid = new Grid<'filled'>()
-    const sim = createPixelartAutomata(initialSprouts, grid, gridWidth, gridHeight)
+    const sim = createPixelartAutomata(initialSprouts, grid, gridWidth, gridHeight, {
+        sproutDieChance,
+        sproutBornChance,
+    })
 
     const timerUpdateId = window.setInterval(() => {
         grid.forEach((x, y, value) => {
@@ -398,7 +421,7 @@ export const PixelartPlantRect = ({
     height?: number
     updateInterval?: number
     stopTimeout?: number
-    options?: PixelartOptions
+    options?: PixelartOptions & Partial<PixelartAutomataOptions>
 }) => {
     updateInterval ??= 100
     stopTimeout ??= 1000 * 60

@@ -1,7 +1,22 @@
 import { basicSetup, minimalSetup } from 'codemirror'
 
-import { Compartment, EditorState, Text, type ChangeSpec, type Extension } from '@codemirror/state'
-import { Decoration, EditorView, ViewPlugin, ViewUpdate, WidgetType, type DecorationSet } from '@codemirror/view'
+import {
+    Compartment,
+    EditorState,
+    StateEffect,
+    StateField,
+    Text,
+    type ChangeSpec,
+    type Extension,
+} from '@codemirror/state'
+import {
+    Decoration,
+    EditorView,
+    ViewPlugin,
+    ViewUpdate,
+    WidgetType,
+    type DecorationSet,
+} from '@codemirror/view'
 
 import { useEffect, useRef, useState } from 'preact/hooks'
 
@@ -9,7 +24,11 @@ import { Color, type AllSpace } from '@/lib/colors'
 import { getChunks, getOriginalDoc, unifiedMergeView } from '@codemirror/merge'
 import { ToastDisplay, useToasts } from './toasts'
 
-const $ = (tag: string, attrs: Record<string, any>, children: (HTMLElement | string)[] = []): HTMLElement => {
+const $ = (
+    tag: string,
+    attrs: Record<string, any>,
+    children: (HTMLElement | string)[] = [],
+): HTMLElement => {
     const elem = document.createElement(tag)
     for (const [key, value] of Object.entries(attrs)) {
         if (key === 'style' && typeof value === 'object') {
@@ -41,7 +60,11 @@ function camelToKebab(str: string): string {
     return str.replace(/[A-Z]/g, match => `-${match.toLowerCase()}`)
 }
 
-const $svg = (tag: string, attrs: Record<string, string>, children: (SVGElement | string)[] = []): SVGElement => {
+const $svg = (
+    tag: string,
+    attrs: Record<string, string>,
+    children: (SVGElement | string)[] = [],
+): SVGElement => {
     const elem = document.createElementNS('http://www.w3.org/2000/svg', tag)
     for (const [key, value] of Object.entries(attrs)) {
         elem.setAttribute(camelToKebab(key), value)
@@ -109,17 +132,18 @@ const SUPPORTED_COLORS_HEX: Record<string, string> = {
     teal: '#14b8a6',
 }
 
-const initialContent = `Hello! This is a CodeMirror 6 editor.
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Here is a <rectangle blue> shape. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-
-You can create shapes by typing <shape color>. Try it!
-For example: <circle green> or <star yellow>.
-
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Let's add an <rectangle orange> and a <star purple> for fun.
-
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-`
+const initialContent = dedent(`
+    You can create shapes by typing <shape color>. Try it!
+    For example: <circle green> or <star yellow>.
+    
+    Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut 
+    aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
+    voluptate velit esse cillum dolore eu fugiat nulla pariatur. Let's add some
+    inline ones like <rectangle orange> and a <star purple> for fun.
+    
+    Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
+    deserunt mollit anim id est laborum.
+`)
 
 // --- 1. The Widget (defined inside the async function) ---
 // This class needs access to the dynamically imported WidgetType.
@@ -147,7 +171,9 @@ class ShapeWidget extends WidgetType {
 
         const shapeDef = SHAPES[this.shape]
         if (!shapeDef) {
-            const errorText = $('span', { style: { color: 'red' } }, [`Unsupported shape: ${this.shape}`])
+            const errorText = $('span', { style: { color: 'red' } }, [
+                `Unsupported shape: ${this.shape}`,
+            ])
             container.appendChild(errorText)
             return container
         }
@@ -182,7 +208,11 @@ function setupEditor(el: HTMLElement, extensions: any[] = [], content: string = 
     return view
 }
 
-function createCodeMirrorEditor(el: HTMLElement, extensions: Extension[] = [], initialContent: string = '') {
+function createCodeMirrorEditor(
+    el: HTMLElement,
+    extensions: Extension[] = [],
+    initialContent: string = '',
+) {
     const state = EditorState.create({
         doc: initialContent,
         extensions: [minimalSetup, ...extensions, EditorView.lineWrapping],
@@ -233,11 +263,15 @@ export const createShapePlugin = () =>
                         const shape = match[1].toLowerCase()
                         const color = match[2].toLowerCase()
 
-                        if (!['rectangle', 'circle', 'star'].includes(shape) || !SUPPORTED_COLORS_HEX[color]) {
+                        if (
+                            !['rectangle', 'circle', 'star'].includes(shape) ||
+                            !SUPPORTED_COLORS_HEX[color]
+                        ) {
                             continue
                         }
 
-                        const isCursorInside = mainSelection.from <= end && mainSelection.to >= start
+                        const isCursorInside =
+                            mainSelection.from <= end && mainSelection.to >= start
                         if (!isCursorInside) {
                             const widget = new ShapeWidget(shape, SUPPORTED_COLORS_HEX[color])
                             const hideDecoration = Decoration.replace({}).range(start, end)
@@ -282,7 +316,9 @@ export const CodeMirrorEditor = ({
 
 export function dedent(str: string): string {
     const lines = str.split('\n')
-    const minIndent = Math.min(...lines.filter(line => line.trim()).map(line => line.match(/^ */)?.[0].length || 0))
+    const minIndent = Math.min(
+        ...lines.filter(line => line.trim()).map(line => line.match(/^ */)?.[0].length || 0),
+    )
     return lines
         .map(line => line.slice(minIndent))
         .join('\n')
@@ -377,10 +413,15 @@ export const CodeMirrorMergeDemo = () => {
                 <strong>New Version</strong>
                 <div class="text-editor" ref={editorElNewRef} />
             </div>
-            <div class="unified-merge-editor" style={{ flex: '1 1 100%' }}>
-                <strong>Unified Merge View</strong>
-                <button onClick={recreateMergeView}>Recreate</button>
-                <div class="text-editor" style={{ height: '400px' }} ref={mergeElRef} />
+
+            <div class="grid-container fill-width">
+                <div class="tools">
+                    <div class="grid-row">
+                        <strong>Unified Merge View</strong>
+                        <button onClick={recreateMergeView}>Recreate</button>
+                    </div>
+                </div>
+                <div class="text-editor" ref={mergeElRef} />
             </div>
         </div>
     )
@@ -421,13 +462,17 @@ export const CodeMirrorMergeBasicSetupDemo = ({
                 EditorView.updateListener.of(update => {
                     const newChunkCount = getChunks(update.state)?.chunks.length
 
-                    const tr = update.transactions.find(tr => tr.isUserEvent('accept') || tr.isUserEvent('revert'))
+                    const tr = update.transactions.find(
+                        tr => tr.isUserEvent('accept') || tr.isUserEvent('revert'),
+                    )
                     console.log(update)
                     if (tr) {
                         const eventType = tr.isUserEvent('accept') ? 'accepted' : 'reverted'
 
                         if (debugToasts) {
-                            addToast(`The chunk was ${eventType}, now ${newChunkCount} chunk(s) remain.`)
+                            addToast(
+                                `The chunk was ${eventType}, now ${newChunkCount} chunk(s) remain.`,
+                            )
                         }
                     }
                 }),
@@ -444,9 +489,6 @@ export const CodeMirrorMergeBasicSetupDemo = ({
         }
     }, [])
 
-    const [findText, setFindText] = useState('')
-    const [replaceText, setReplaceText] = useState('')
-
     return (
         <>
             <div style={{ display: 'grid', gap: '0' }}>
@@ -454,46 +496,22 @@ export const CodeMirrorMergeBasicSetupDemo = ({
                 {tools.length > 0 && (
                     <div class="tools">
                         {tools.includes('findAndReplace') && (
-                            <div class="find-replace">
-                                <strong>Find & Replace</strong>
-                                <input
-                                    type="text"
-                                    placeholder="Find..."
-                                    value={findText}
-                                    onInput={e => setFindText(e.currentTarget.value)}
-                                />
-                                <input
-                                    type="text"
-                                    placeholder="Replace..."
-                                    value={replaceText}
-                                    onInput={e => setReplaceText(e.currentTarget.value)}
-                                />
-                                <button
-                                    onClick={() => {
-                                        if (!mergeEditorViewRef.current) return
+                            <FindReplaceWidget
+                                onReplaceAll={(findText, replaceText) => {
+                                    if (!mergeEditorViewRef.current) return
 
-                                        const view = mergeEditorViewRef.current
+                                    const view = mergeEditorViewRef.current
+                                    const changes = findReplaceTransaction(
+                                        view.state,
+                                        findText,
+                                        replaceText,
+                                    )
 
-                                        const changes: ChangeSpec[] = []
-                                        const regex = new RegExp(findText, 'g')
-
-                                        const docText = view.state.doc.toString()
-                                        for (const match of docText.matchAll(regex)) {
-                                            changes.push({
-                                                from: match.index,
-                                                to: match.index + match[0].length,
-                                                insert: replaceText,
-                                            })
-                                        }
-
-                                        if (changes.length > 0) {
-                                            view.dispatch({ changes })
-                                        }
-                                    }}
-                                >
-                                    Replace All
-                                </button>
-                            </div>
+                                    if (changes.length > 0) {
+                                        view.dispatch({ changes })
+                                    }
+                                }}
+                            />
                         )}
                         {tools.includes('lorem-ipsum') && (
                             <button
@@ -507,7 +525,11 @@ export const CodeMirrorMergeBasicSetupDemo = ({
                                 `)
 
                                     mergeEditorViewRef.current.dispatch({
-                                        changes: { from: 0, to: view.state.doc.length, insert: loremIpsum },
+                                        changes: {
+                                            from: 0,
+                                            to: view.state.doc.length,
+                                            insert: loremIpsum,
+                                        },
                                     })
                                 }}
                             >
@@ -606,8 +628,206 @@ export const CodeMirrorToggleMergeModeDemo = ({
     )
 }
 
+function findReplaceTransaction(
+    state: EditorState,
+    findText: string,
+    replaceText: string,
+): ChangeSpec[] {
+    const changes: ChangeSpec[] = []
+    const regex = new RegExp(findText, 'g')
+
+    const docText = state.doc.toString()
+    for (const match of docText.matchAll(regex)) {
+        changes.push({
+            from: match.index,
+            to: match.index + match[0].length,
+            insert: replaceText,
+        })
+    }
+
+    return changes
+}
+
+interface FindReplaceWidgetProps {
+    onReplaceAll: (findText: string, replaceText: string) => void
+}
+
+export const FindReplaceWidget = ({ onReplaceAll }: FindReplaceWidgetProps) => {
+    const [findText, setFindText] = useState('')
+    const [replaceText, setReplaceText] = useState('')
+
+    return (
+        <div class="find-replace">
+            <strong>Find and Replace</strong>
+            <input
+                type="text"
+                placeholder="Find..."
+                value={findText}
+                onInput={e => setFindText(e.currentTarget.value)}
+            />
+            <input
+                type="text"
+                placeholder="Replace..."
+                value={replaceText}
+                onInput={e => setReplaceText(e.currentTarget.value)}
+            />
+            <button onClick={() => onReplaceAll(findText, replaceText)}>Replace All</button>
+        </div>
+    )
+}
+
+// const reviewMode = StateField.define<boolean>({
+//     create() {
+//         return false
+//     },
+//     update(value, tr) {
+//         if (tr.isUserEvent('review-changes')) {
+//             console.log('Entering review mode')
+//             return true
+//         }
+//         if (tr.isUserEvent('accept') || tr.isUserEvent('revert')) {
+//             const chunksCount = getChunks(tr.state)?.chunks.length || 0
+//             if (chunksCount === 0) {
+//                 console.log('All chunks resolved, exiting review mode')
+//                 return false
+//             }
+//         }
+//         return value
+//     },
+// })
+
+const REVIEW_CHANGES_EVENT = 'review-changes'
+
+const setOriginalDoc = StateEffect.define<Text | false>()
+
+const originalDocField = StateField.define<Text | false>({
+    create() {
+        return false
+    },
+    update(value, tr) {
+        console.log('originalDocField update:', value, tr)
+
+        for (const effect of tr.effects) {
+            if (effect.is(setOriginalDoc)) {
+                console.log('Setting original document in state field')
+                return effect.value
+            }
+        }
+
+        if (value === false && tr.isUserEvent(REVIEW_CHANGES_EVENT)) {
+            console.log('Storing original document for review mode')
+            return tr.startState.doc
+        }
+
+        return value
+    },
+})
+
+export const CodeMirrorReviewDemo = ({
+    oldDoc = null,
+    newDoc = 'one\n2\nthree\n4',
+}: {
+    oldDoc: string | null
+    newDoc?: string
+}) => {
+    oldDoc ??= newDoc
+
+    const editorElementRef = useRef<HTMLDivElement>(null)
+    const editorViewRef = useRef<EditorView | null>(null)
+
+    useEffect(() => {
+        if (!editorElementRef.current) return
+
+        const state = EditorState.create({
+            doc: newDoc,
+            extensions: [
+                basicSetup,
+                EditorView.lineWrapping,
+
+                // reviewMode,
+                originalDocField,
+
+                unifiedDiffCompartment.of([]),
+
+                EditorState.transactionExtender.of(tr => {
+                    if (tr.isUserEvent(REVIEW_CHANGES_EVENT)) {
+                        console.log('Entering review mode')
+
+                        const originalDoc = tr.state.field(originalDocField)
+                        if (!originalDoc) {
+                            throw new Error('Original document not found in state field')
+                        }
+
+                        return {
+                            effects: [
+                                unifiedDiffCompartment.reconfigure([
+                                    unifiedMergeView({
+                                        original: originalDoc,
+                                        allowInlineDiffs: true,
+                                    }),
+                                ]),
+                            ],
+                        }
+                    }
+
+                    if (tr.isUserEvent('accept') || tr.isUserEvent('revert')) {
+                        if (getChunks(tr.state)?.chunks.length === 0) {
+                            console.log('All chunks resolved, exiting review mode')
+                            return {
+                                effects: [
+                                    setOriginalDoc.of(false),
+                                    unifiedDiffCompartment.reconfigure([]),
+                                ],
+                            }
+                        }
+                    }
+
+                    return null
+                }),
+            ],
+        })
+
+        editorViewRef.current = new EditorView({
+            parent: editorElementRef.current,
+            state,
+        })
+
+        return () => {
+            editorViewRef.current?.destroy()
+        }
+    }, [])
+
+    return (
+        <>
+            <div style={{ display: 'grid', gap: '0' }}>
+                <div class="tools">
+                    <FindReplaceWidget
+                        onReplaceAll={(findText, replaceText) => {
+                            if (!editorViewRef.current) return
+                            const view = editorViewRef.current
+
+                            const changes = findReplaceTransaction(
+                                view.state,
+                                findText,
+                                replaceText,
+                            )
+
+                            if (changes.length > 0) {
+                                view.dispatch({ changes, userEvent: REVIEW_CHANGES_EVENT })
+                            }
+                        }}
+                    />
+                </div>
+                <div class="text-editor" ref={editorElementRef} />
+            </div>
+        </>
+    )
+}
+
 export const TextareaAutoresizeDemo1 = () => {
-    const [content, setContent] = useState('Start typing...\nThis textarea will grow with your content.')
+    const [content, setContent] = useState(
+        'Start typing...\nThis textarea will grow with your content.',
+    )
 
     return (
         <textarea
@@ -628,7 +848,9 @@ export const TextareaAutoresizeDemo1 = () => {
 }
 
 export const TextareaAutoresizeDemo2 = () => {
-    const [content, setContent] = useState('Start typing...\nThis textarea will grow with your content.')
+    const [content, setContent] = useState(
+        'Start typing...\nThis textarea will grow with your content.',
+    )
     const textareaRef = useRef<HTMLTextAreaElement>(null)
 
     useEffect(() => {
@@ -668,7 +890,7 @@ export const TextInputDatalistDemo = () => {
         <div
             style={{
                 display: 'grid',
-                placeContent: 'center',
+                width: '100%',
             }}
         >
             <input
@@ -678,8 +900,7 @@ export const TextInputDatalistDemo = () => {
                 onInput={e => setValue(e.currentTarget.value)}
                 placeholder="Type to search fruits..."
                 style={{
-                    width: '512px',
-                    maxWidth: '100%',
+                    width: '100%',
                 }}
             />
             <datalist id="fruits">
@@ -688,5 +909,128 @@ export const TextInputDatalistDemo = () => {
                 ))}
             </datalist>
         </div>
+    )
+}
+
+type HighlightSpec = Array<{
+    pattern: RegExp | string
+    color: string
+}>
+
+type HighlightToken = {
+    text: string
+    color: string | null
+}
+
+function highlightText(text: string, spec: HighlightSpec): HighlightToken[] {
+    const ranges: Array<{ start: number; end: number; color: string }> = []
+
+    // Collect all matches from all patterns
+    for (const { pattern, color } of spec) {
+        const regex =
+            typeof pattern === 'string'
+                ? new RegExp(`\\b${pattern}\\b`, 'g')
+                : new RegExp(
+                      pattern.source,
+                      pattern.flags.includes('g') ? pattern.flags : pattern.flags + 'g',
+                  )
+
+        for (const match of text.matchAll(regex)) {
+            ranges.push({
+                start: match.index,
+                end: match.index + match[0].length,
+                color,
+            })
+        }
+    }
+
+    // Sort by start position
+    ranges.sort((a, b) => a.start - b.start)
+
+    // Build tokens, avoiding overlaps (first match wins)
+    const tokens: HighlightToken[] = []
+    let pos = 0
+
+    for (const range of ranges) {
+        if (range.start >= pos) {
+            if (range.start > pos) {
+                tokens.push({ text: text.slice(pos, range.start), color: null })
+            }
+            tokens.push({ text: text.slice(range.start, range.end), color: range.color })
+            pos = range.end
+        }
+    }
+
+    if (pos < text.length) {
+        tokens.push({ text: text.slice(pos), color: null })
+    }
+
+    return tokens
+}
+
+interface HighlightedTextProps {
+    text: string
+    spec: HighlightSpec
+}
+
+const HighlightedText = ({ text, spec }: HighlightedTextProps) => {
+    const tokens = highlightText(text, spec)
+    return (
+        <>
+            {tokens.map((token, i) => (
+                <span key={i} style={token.color ? { color: token.color } : undefined}>
+                    {token.text}
+                </span>
+            ))}
+        </>
+    )
+}
+
+export const TextareaOverlayTrickDemo = () => {
+    const [content, setContent] = useState(
+        dedent(`
+            This is a simple textarea with an overlay for syntax highlighting.
+            Type something like <const> or <function> to see the magic!
+
+            let x = 10
+            function greet() {
+                console.log("Hello, world!")
+            }
+        `),
+    )
+
+    return (
+        <>
+            <div class="textarea-overlay-container">
+                <pre class="textarea-overlay-content">
+                    {content.split('\n').map((line, i) => (
+                        <div key={i}>
+                            <HighlightedText
+                                text={line + ' '}
+                                spec={[
+                                    {
+                                        pattern: 'function|class|for|if|else|const|let|var',
+                                        color: '#d73a49',
+                                    },
+                                    { pattern: /\d+(\.\d+)?/, color: '#3b82f6' },
+                                    { pattern: /".*?"|'.*?'/, color: '#208609' },
+                                ]}
+                            />
+                        </div>
+                    ))}
+                </pre>
+                <textarea
+                    class="textarea-overlay-input"
+                    value={content}
+                    onInput={e => setContent(e.currentTarget.value)}
+                    spellcheck={false}
+                />
+            </div>
+            <figcaption>
+                This is a simple example of the overlay trick, the textarea is hidden and the
+                overlay is rendered on top of it. Try to focus the textarea and see{' '}
+                <s>some css trickery that shows</s> how the overlay updates in real-time.
+            </figcaption>
+        </>
     )
 }

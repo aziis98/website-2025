@@ -109,8 +109,13 @@ const { title, description, thumbnail } = Astro.props
                         client:load
                         updateInterval={5}
                         stopTimeout={5000}
-                        width={7 * 5}
-                        options={{ cellColor: 'hsl(266 90% 75% / 0.25)', spawnLocation: 'bottom' }}
+                        width={9 * 5}
+                        options={{
+                            cellColor: 'hsl(266 90% 75% / 0.25)',
+                            spawnLocation: 'bottom',
+
+                            sproutBornChance: 0.1,
+                        }}
                     />
                 </div>
 
@@ -129,8 +134,13 @@ const { title, description, thumbnail } = Astro.props
                         client:load
                         updateInterval={5}
                         stopTimeout={5000}
-                        width={7 * 5}
-                        options={{ cellColor: 'hsl(266 90% 75% / 0.25)', spawnLocation: 'top' }}
+                        width={9 * 5}
+                        options={{
+                            cellColor: 'hsl(266 90% 75% / 0.25)',
+                            spawnLocation: 'top',
+
+                            sproutBornChance: 0.1,
+                        }}
                     />
                 </div>
             </nav>
