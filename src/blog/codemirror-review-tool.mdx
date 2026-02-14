@@ -498,6 +498,8 @@ import { CodeMirrorReviewDemo } from '@/components/preact/codemirror'
     </figcaption>
 </figure>
 
+If you want to see the full code for this example, you can check the [appendix](#let-me-copy-paste-a-snippet) where I put a self-contained version of this review mode extension that you can copy-paste into your project and modify as needed.
+
 ## Conclusion and Future Experiments
 
 This post is already getting quite long, so I will just briefly mention some other experiments I'm working on I might write about in future posts, including some sneak peeks:
@@ -526,13 +528,130 @@ import { CodeMirrorEditor } from '@/components/preact/codemirror'
 
 ## References
 
-- https://codemirror.net/docs/ -- CodeMirror Documentation
+- https://codemirror.net/docs/ -- The CodeMirror documentation
 
-- https://codemirror.net/docs/guide/ -- CodeMirror System Guide
+- https://codemirror.net/docs/guide/ -- The CodeMirror system guide
 
-- https://github.com/codemirror/merge -- The merge extension source code
+- https://github.com/codemirror/merge -- Repo of the original merge extension
+
+- https://marijnhaverbeke.nl/blog/extensibility.html -- A blog post by the creator of codemirror about the early design decisions and its extensibility model
+
+- https://marijnhaverbeke.nl/blog/facets.html -- A more up to date post about facets
 
 ## Appendix
+
+### Let me copy-paste a snippet
+
+Here's a self-contained version of the code for the review tool extension. You can just copy-paste this "micro-library" into your project and <s>let LLMs</s> modify it as needed.
+
+```ts
+import { basicSetup } from 'codemirror'
+import { EditorView } from '@codemirror/view'
+import {
+    Compartment,
+    EditorState,
+    StateEffect,
+    StateField,
+    Text,
+    type ChangeSpec,
+    type TransactionSpec,
+} from '@codemirror/state'
+
+import { getChunks, unifiedMergeView } from '@codemirror/merge'
+
+const unifiedDiffCompartment = new Compartment()
+
+const setOriginalDoc = StateEffect.define<Text | null>()
+
+const originalDocField = StateField.define<Text | null>({
+    create() {
+        return null
+    },
+    update(value, tr) {
+        for (const effect of tr.effects)
+            if (effect.is(setOriginalDoc)) return effect.value
+
+        return value
+    },
+})
+
+const reviewModeExtension = EditorState.transactionExtender.of(tr => {
+    // Enter review mode: enable diff and set original document if not set
+    if (tr.isUserEvent('review-changes')) {
+        const originalDoc = tr.startState.field(originalDocField)
+        const reviewDoc = originalDoc ?? tr.startState.doc
+
+        const effects = [
+            unifiedDiffCompartment.reconfigure([
+                unifiedMergeView({
+                    original: reviewDoc,
+                    allowInlineDiffs: true,
+                }),
+            ]),
+        ]
+
+        if (!originalDoc) {
+            effects.push(setOriginalDoc.of(reviewDoc))
+        }
+
+        return { effects }
+    }
+
+    // Exit review mode: disable diff when all changes are resolved
+    if (tr.isUserEvent('accept') || tr.isUserEvent('revert')) {
+        if (getChunks(tr.state)?.chunks.length === 0) {
+            return {
+                effects: [
+                    setOriginalDoc.of(null),
+                    unifiedDiffCompartment.reconfigure([]),
+                ],
+            }
+        }
+    }
+
+    return null
+})
+
+export function createReviewModeExtension() {
+    return [
+        originalDocField,
+        unifiedDiffCompartment.of([]),
+        reviewModeExtension,
+    ]
+}
+
+export function createReviewTransaction(
+    changes: ChangeSpec[],
+): TransactionSpec {
+    return {
+        changes,
+        userEvent: 'review-changes',
+    }
+}
+```
+
+This can then be used in your editor setup as follows:
+
+```ts
+import { EditorState } from '@codemirror/state'
+import { EditorView, basicSetup } from '@codemirror/view'
+import { createReviewModeExtension, createReviewTransaction } from './review-extension'
+
+const view = new EditorView({
+    parent: document.body,
+    doc: 'one\n2\nthree\n4',
+    extensions: [basicSetup, createReviewModeExtension()],
+})
+
+...
+
+view.dispatch(
+    createReviewTransaction([
+        { from:  4, to:  5, insert:  'two' },
+        { from: 10, to: 11, insert: 'four' },
+    ]),
+)
+```
 
 ### Unified Merge View Demo
 
