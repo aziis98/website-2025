@@ -324,6 +324,21 @@
 
             padding: 0 1rem;
         }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            a {
+                background: none;
+                padding: 0;
+
+                &:hover {
+                    background: none;
+                    text-decoration: underline solid hsl(from var(--accent) h s 60%) 2px;
+                }
+            }
+        }
     }
 
     pre,
