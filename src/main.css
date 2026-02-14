@@ -307,6 +307,12 @@
             }
         }
 
+        .publish-date {
+            color: #777;
+            font-size: 0.85em;
+            font-style: italic;
+        }
+
         .post-thumbnail {
             display: block;
             margin: 1rem auto;
