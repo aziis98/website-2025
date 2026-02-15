@@ -432,7 +432,7 @@
         }
 
         @media screen and (width <= 1200px) {
-            grid-template-columns: 1fr minmax(auto, 70ch) 1fr;
+            grid-template-columns: 1fr minmax(auto, 60ch) 1fr;
         }
 
         &:has(.content.wide) {
@@ -579,7 +579,7 @@
         }
 
         @media screen and (width <= 960px) {
-            grid-template-columns: auto minmax(auto, 70ch);
+            grid-template-columns: auto minmax(auto, 65ch);
 
             > header {
                 > .header-title {
