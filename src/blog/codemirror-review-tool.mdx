@@ -541,7 +541,6 @@ import { CodeMirrorEditor } from '@/components/preact/codemirror'
 Here's a self-contained version of the code for the review tool extension. You can just copy-paste this "micro-library" into your project and <s>let LLMs</s> modify it as needed.
 
 ```ts
-import { basicSetup } from 'codemirror'
 import { EditorView } from '@codemirror/view'
 import {
     Compartment,
@@ -553,6 +552,7 @@ import {
     type TransactionSpec,
 } from '@codemirror/state'
 
+import { basicSetup } from 'codemirror'
 import { getChunks, unifiedMergeView } from '@codemirror/merge'
 
 const unifiedDiffCompartment = new Compartment()
@@ -593,7 +593,7 @@ const reviewModeExtension = EditorState.transactionExtender.of(tr => {
         return { effects }
     }
 
-    // Exit review mode: disable diff when all changes are resolved
+    // Exiting review mode: disable diff view when all changes are resolved
     if (tr.isUserEvent('accept') || tr.isUserEvent('revert')) {
         if (getChunks(tr.state)?.chunks.length === 0) {
             return {
