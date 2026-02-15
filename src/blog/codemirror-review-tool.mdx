@@ -130,9 +130,9 @@ const view = new EditorView({
 
 This code is correct but this is already lying a bit about the architecture, but we'll get to this later. Differently from other editors, accessing and modifying the content of the editor is more involved than just reading or writing a `.value` property.
 
-To get the current content of the editor, you can use `view.state.doc.toString()`. To modify it programmatically, you need to dispatch a **transaction** with all the changes you want to apply (a change is a range of text to replace and the new text to insert in its place).
+To get the current content of the editor, you can use `view.state.doc.toString()`. To modify it programmatically, you need to dispatch a **transaction** with all the changes you want to apply. Here a change is a range of text to replace and the new text to insert in its place.
 
-Here is an example of replacing all the content of the editor with a new string (more precisely a new document, this is the representation used internally by CodeMirror for the content of the editor, it has some optimizations for large documents and other features, but you can just think of it as a string for now and most places that expect a `Text` will also accept a string and convert it for you):
+More precisely we don't replace the content with a new string but a new document, this is the representation used internally by CodeMirror for the content of the editor, it has some optimizations for large documents, but you can just think of it as a string for now. Also most places that expect a `Text` will also accept a string and convert it for you. Here is an example of replacing all the content of the editor:
 
 ```ts
 // Get current content
@@ -150,7 +150,7 @@ view.dispatch({
 })
 ```
 
-Let's get back to the lie from before, the `doc` and `extensions` parameters are actually just shorthands for creating an initial state for the editor, here is a more explicit way to write the same code as above:
+Let's get back to the lie from before, the `doc` and `extensions` parameters are actually just shorthands for creating an initial state for you, here is a more explicit way to write the same code as above:
 
 ```ts
 import { EditorState } from '@codemirror/state'
@@ -167,11 +167,11 @@ const view = new EditorView({
 })
 ```
 
-The first thing to note here is that `state` objects are **immutable**, you cannot modify them directly. On the other hand, state objects have utility methods to create **transaction** objects that represent changes to the state. You can then **dispatch** these transactions to an `EditorView` to apply the changes. This is a very powerful and flexible way to manage the state of the editor, but it can be a bit overwhelming at first.
+The first thing to note here is that `state` objects are **immutable**, you cannot modify them directly. On the other hand, state objects have utility methods to create new **transaction** objects (also immutable) that represent changes to themselves. You can then **dispatch** these transactions to an `EditorView` to apply the changes. This is a very much functional-inspired way to manage the state of the editor, but it can be a bit overwhelming at first. This follows very closely the [functional core, imperative shell architecture](https://www.destroyallsoftware.com/screencasts/catalog/functional-core-imperative-shell).
 
 To recap, the core concepts of CodeMirror 6 are:
 
-- **State** -- The state represents the current document, including its content, selection, metadata and extensions. It is immutable and can be updated with transactions.
+- **State** -- The state is an immutable object that represents the current document, including its content, selection, metadata and extensions. It is the single source of truth for the editor and can only be updated by applying transactions to the view that manages it.
     - CodeMirror allows **multiple cursors** (and selections), they are represented as an array of from-to ranges of the content. One of them is the "main" selection and is synchronized with the DOM one.
 
     - **Extensions** are also part of the state and are the main way to customize the behavior of the editor. They can be passed multiple times and they will be merged together or deduplicated using various strategies.
@@ -231,6 +231,8 @@ const view = new EditorView({
 })
 ```
 
+By default this view shows the diff between the "current" content and an "original" provided content. All new changes are made to the "current" content, so to update the diff you just need to dispatch updates as always and the diff view will update accordingly.
+
 import {
     CodeMirrorMergeBasicSetupDemo,
     dedent,
@@ -255,21 +257,15 @@ import {
     <figcaption>Try this out!</figcaption>
 </figure>
 
-By default this view shows the diff between the "current" content and an "original" provided content. All changes are made to the "current" content, so to update the diff you just need to dispatch updates as always and the diff view will update accordingly.
-
-For example to add a simple regex find and replace tool, you can do something like this:
+Let's now add a simple **regex find and replace tool**. We can create a method that takes the current state of the editor (an `EditorState` object) and the two find and replace strings, and returns an array of `ChangeSpec`.
 
 ```ts
-function findReplaceTransaction(
-    state: EditorState,
-    findText: string,
-    replaceText: string,
-): ChangeSpec[] {
-    const changes: ChangeSpec[] = []
+function findReplaceTransaction(state, findText, replaceText) {
+    const changes = []
     const regex = new RegExp(findText, 'g')
 
-    const docText = state.doc.toString()
-    for (const match of docText.matchAll(regex)) {
+    const docStr = state.doc.toString()
+    for (const match of docStr.matchAll(regex)) {
         changes.push({
             from: match.index,
             to: match.index + match[0].length,
@@ -303,13 +299,13 @@ view.dispatch({
     </figcaption>
 </figure>
 
-This works fine as a diff editor, but I would like to make this more like the VSCode code review interface. After the user accepts or rejects all the changes I want the diff "mode" to be disabled so that the user can continue editing the document as normal. This is not the default behavior of the merge view, but we can achieve this by conditionally enabling and disabling the `unifiedDiff` extension.
+This works fine as a diff editor, but I would like to make this more like the VSCode code review interface. After no changes are left in the diff view, I want to disable the diff view so that the user can continue editing the document as normal without the diff view in the way. This is not the default behavior of the merge view, but we can achieve this by conditionally enabling and disabling the `unifiedDiff` extension.
 
-For now let's start from the problem of detecting when the user accepts or rejects a change in the merge view, and then we will use this information to disable the diff view when there are no more changes to review.
+For now let's start from the problem of detecting when the user accepts or rejects a change in the merge view, and then we will use this information to disable it when there are no more changes to review.
 
 #### Intercepting accept/reject events
 
-This can be achieved using an `EditorView.updateListener` **extension** that listens for transactions with the `accept` or `revert` user events [which are emitted by the unified merge view](https://github.com/search?q=repo%3Acodemirror%2Fmerge+%22userEvent%3A%22&type=code). This was one of the things that wasn't documented in the merge view documentation (I found this out by giving Gemini the whole `@codemirror/merge` repo and asking it how to detect this, and it was very helpful).
+This can be achieved using an `EditorView.updateListener` **extension** that listens for transactions with the `accept` or `revert` user events [which are emitted by the unified merge view](https://github.com/search?q=repo%3Acodemirror%2Fmerge+%22userEvent%3A%22&type=code). This was one of the things that wasn't documented in the merge view documentation (I found this out by giving Gemini the whole `@codemirror/merge` repo and asking it how to detect this, this was very helpful).
 
 ```ts
 EditorView.updateListener.of(update => {
@@ -360,7 +356,7 @@ We can create a new "extension type" for this compartment as follows:
 export const unifiedDiffCompartment = new Compartment()
 ```
 
-Then we can instanciate this as an empty compartment using `unifiedDiffCompartment.of([])` in the initial editor configuration, and later **reconfigure** it to enable the unified diff view when needed:
+Then we can instanciate this as `unifiedDiffCompartment.of([])` in the initial editor configuration, and later **reconfigure** it to enable the unified diff view when needed:
 
 ```ts
 view.dispatch({
@@ -388,36 +384,28 @@ import { CodeMirrorToggleMergeModeDemo } from '@/components/preact/codemirror'
         `)}
         client:only
     />
-    <figcaption>Try to enter and exit the review mode</figcaption>
+    <figcaption>
+        You can use the button above to toggle the unified diff view on and off,
+        the original document is always the original one.
+    </figcaption>
 </figure>
 
 #### Let's put it all together
 
-Let's now create a final editor that has all this pieces together. After some trial and error, I found that the best way to implement this is to trigger the "review mode" with a custom user event that I called `review-changes`. The original document of the merge view should be update only when first entering this review mode.
+We can now create a final editor that has all this pieces together. After some trial and error, I found that the best way to implement this is to trigger the _review mode_ with a custom user event that I called `review-changes`. The "original document" of the merge view should update only when first entering this review mode.
 
 To solve this we can use a state field and a state effect to store and update the original document when first entering the review mode
 
 ```ts
-const setOriginalDoc = StateEffect.define<Text | false>()
+const setOriginalDoc = StateEffect.define<Text | null>()
 
-const originalDocField = StateField.define<Text | false>({
+const originalDocField = StateField.define<Text | null>({
     create() {
-        return false
+        return null
     },
     update(value, tr) {
-        console.log('originalDocField update:', value, tr)
-
-        for (const effect of tr.effects) {
-            if (effect.is(setOriginalDoc)) {
-                console.log('Setting original document in state field')
-                return effect.value
-            }
-        }
-
-        if (value === false && tr.isUserEvent('review-changes')) {
-            console.log('Storing original document for review mode')
-            return tr.startState.doc
-        }
+        for (const effect of tr.effects)
+            if (effect.is(setOriginalDoc)) return effect.value
 
         return value
     },
@@ -426,23 +414,28 @@ const originalDocField = StateField.define<Text | false>({
 
 To handle the review mode logic, we can use a "transaction extender" that intercepts transactions and manipulates them before they are applied.
 
-- When a transaction has the `review-changes` user event, we need to go into review mode and reconfigure the unified diff compartment to enable that extension.
+- When a transaction has the `review-changes` user event, we need to enable the review mode by
+  reconfiguring the unified diff compartment to enable that extension.
 
-- When we are in review mode and we apply the last change, we need to exit the review mode and reconfigure the unified diff compartment to disable that extension.
+- When we are in review mode and we apply the last change, we need to exit review mode and reconfigure again to disable that extension.
 
 Here is the extension that implements this logic:
 
 ```ts
 EditorState.transactionExtender.of(tr => {
     if (tr.isUserEvent('review-changes')) {
+        const originalDoc = tr.startState.field(originalDocField)
+        const reviewDoc = originalDoc ?? tr.startState.doc
+
         return {
             effects: [
                 unifiedDiffCompartment.reconfigure([
                     unifiedMergeView({
-                        original: tr.state.field(originalDocField),
+                        original: reviewDoc,
                         allowInlineDiffs: true,
                     }),
                 ]),
+                ...(originalDoc ? [] : [setOriginalDoc.of(reviewDoc)]),
             ],
         }
     }
@@ -451,7 +444,7 @@ EditorState.transactionExtender.of(tr => {
         if (getChunks(tr.state)?.chunks.length === 0) {
             return {
                 effects: [
-                    setOriginalDoc.of(false),
+                    setOriginalDoc.of(null),
                     unifiedDiffCompartment.reconfigure([]),
                 ],
             }
@@ -494,11 +487,14 @@ import { CodeMirrorReviewDemo } from '@/components/preact/codemirror'
     <figcaption>
         The final result, try to enter the review mode by replacing "2" with
         "two" and "4" with "four", then accept or reject the changes and see how
-        the diff view is toggled accordingly.
+        the diff view is toggled accordingly. (You can tell teh diff view is
+        being toggled correctly by the slight change in the gutter on the left)
     </figcaption>
 </figure>
 
 If you want to see the full code for this example, you can check the [appendix](#let-me-copy-paste-a-snippet) where I put a self-contained version of this review mode extension that you can copy-paste into your project and modify as needed.
+
+The complete code is just ~60 lines of code so I don't think it's worth creating a "micro-library" out of it, I think you are better off just putting that code into your project and modify it as needed, you are also free to make this a llm skill or something if you want.
 
 ## Conclusion and Future Experiments
 
@@ -506,7 +502,7 @@ This post is already getting quite long, so I will just briefly mention some oth
 
 import { CodeMirrorEditor } from '@/components/preact/codemirror'
 
-- **Custom Decorations** -- CodeMirror 6 has a very powerful system for creating custom decorations and I'm a great fan of "replacement decorations" as in [prosemirror-math](https://benrbray.com/prosemirror-math/)
+- **Custom Decorations** -- CodeMirror 6 has a very powerful system for creating custom decorations and I'm a great fan of WYSIWYG editors and "replacement decorations" are one of the starting points for those as featured in [prosemirror-math](https://benrbray.com/prosemirror-math/)
 
     <figure>
         <CodeMirrorEditor client:only />
@@ -520,9 +516,9 @@ import { CodeMirrorEditor } from '@/components/preact/codemirror'
 
 - **Lezer** -- As if that wasn't enough, CodeMirror 6 also has its own (incremental) parsing system called Lezer that allows us to create custom parsers for our languages and use them in the editor to get syntax highlighting, indentation, and other features...
 
-- **LSP Integration** -- Lastly, I want to experiment with the Language Server Protocol (LSP) extension. First I will try to build a simple LSP client that suggests variations of the current word near the cursor, for example let's say we want to suggest the current word converted various cases (camelCase, snake_case, kebab-case, etc).
+- **LSP Integration** -- Lastly, I want to do some experiments with the Language Server Protocol (LSP) extension (maybe by first trying to build a simple LSP client with an autocomplete action that suggests variations of the current word near the cursor, for example let's say we want to suggest the current word converted various cases like camelCase, snake_case, kebab-case...)
 
-    Another thing I want to experiment with is compiling some LSP servers to WASM and have it run directly in the browser...
+    Another thing I want to experiment with is compiling some LSP servers to WASM and have them run directly in the browser...
 
 ---
 
@@ -612,13 +608,11 @@ const reviewModeExtension = EditorState.transactionExtender.of(tr => {
     return null
 })
 
-export function createReviewModeExtension() {
-    return [
-        originalDocField,
-        unifiedDiffCompartment.of([]),
-        reviewModeExtension,
-    ]
-}
+export const reviewExtension = [
+    originalDocField,
+    unifiedDiffCompartment.of([]),
+    reviewModeExtension,
+]
 
 export function createReviewTransaction(
     changes: ChangeSpec[],
@@ -635,12 +629,13 @@ This can then be used in your editor setup as follows:
 ```ts
 import { EditorState } from '@codemirror/state'
 import { EditorView, basicSetup } from '@codemirror/view'
-import { createReviewModeExtension, createReviewTransaction } from './review-extension'
+
+import { reviewExtension, createReviewTransaction } from './review-extension'
 
 const view = new EditorView({
     parent: document.body,
     doc: 'one\n2\nthree\n4',
-    extensions: [basicSetup, createReviewModeExtension()],
+    extensions: [basicSetup, reviewExtension],
 })
 
 ...
