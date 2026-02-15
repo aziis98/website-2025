@@ -206,7 +206,8 @@
             background: hsl(from var(--accent) h s 98%);
             text-decoration: none;
 
-            word-break: break-all;
+            overflow-wrap: break-word;
+            hyphens: auto;
 
             padding: 1px 2px;
             border-radius: 3px;
@@ -216,6 +217,7 @@
                 /* background: hsl(from var(--accent) h 100% 75%); */
                 /* text-decoration: underline solid hsl(from var(--accent) h s 60%) 2px; */
 
+                color: hsl(from var(--accent) h calc(s - 20) 55%);
                 background: hsl(from var(--accent) h s 94%);
                 /* text-decoration: underline solid hsl(from var(--accent) h s 60%) 2px; */
             }

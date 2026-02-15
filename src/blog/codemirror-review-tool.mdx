@@ -6,20 +6,23 @@ tags:
 publish_date: 2026/02/14
 ---
 
-Recently, I've been working on more and more complex web applications and one common component that many of these applications would benefit from is a nice text/code editor.
+Recently, I've been working on more and more complex web applications and one common component that many of these applications would benefit from is a nice text/code editor. To not overcomplicate my life, for now I've always just used simple (and sad) textareas without any advanced features. But I think I've now reached the point where I want to have better code editing features like syntax highlighting, multiple cursors and more.
 
-To not complicate my life even more, I've always used simple and sad textareas without any advanced features like syntax highlighting and multiple cursors (or even just auto-close parentheses or brackets).
+From what I've seen most LLMs today _just suggest to use Monaco_, which is a great editor, but is also very heavy and not easily customizable. I'd like to have more control over the editor itself and I'd also like to extend the editor in various ways, for example by adding custom decorations or other features that are not easily achievable with Monaco and this is why I decided to give [CodeMirror 6](https://codemirror.net/) a try, which is a more modular and customizable editor library.
 
-But editors are a very important part of the user experience in many applications, and
-Most LLMs today suggest to _just use Monaco&trade;_, which is a great editor, but it is also very heavy and not easily customizable. I want to have more control over the editor itself and I would also like to extend the editor in various ways, for example by adding custom decorations or other features that are not easily achievable with Monaco.
+Nowadays, with the rise of LLMs, I think that having a good code editor with a review mode that allows users to easily accept or reject changes is becoming increasingly important as the _chat interface model isn't always ideal_ and I prefer having the LLMs update a document directly by regenerating it completely or with tool-based editing.
+
+In both cases, users **need to see the changes** between the old and the new version of the document and be able to accept/reject each one. For my use cases, this is currently the most intuitive and precise way to handle external changes while editing both code or prose.
 
 ## Various text editor options
 
-Just for the sake of completeness, let's quickly go through some of the options available for text editors on the web. This is not an exhaustive list, but it should give you an idea of the landscape and the trade-offs between different options.
+You can skip this section if you want but just for the sake of completeness, let's quickly go through some of the options available for text editors on the web. This is not an exhaustive list, but it should give you an idea of the landscape and the trade-offs between different options.
 
 ### Just a `textarea`&trade;
 
 This is the last trademarked thing in this post and the simplest option available on the web, this doesn't require any external libraries, copy-paste and undo/redo work out of the box. This is easy to set up and one can easily add features like auto-resize.
+
+#### Autoresizing
 
 The only feature I generally add is **vertical auto-resizing**, I do the following
 
@@ -48,7 +51,7 @@ textarea {
 />
 ```
 
-This article is written using MDX and has meny interactive examples, here how the auto-resize textarea looks like in practice:
+This article is written using MDX and has meny interactive examples, here is how the auto-resize textarea looks like in practice:
 
 import { TextareaAutoresizeDemo1 } from '@/components/preact/codemirror'
 
@@ -56,7 +59,7 @@ import { TextareaAutoresizeDemo1 } from '@/components/preact/codemirror'
     <TextareaAutoresizeDemo1 client:only />
 </figure>
 
-Another technique is to just use the vertical scroll value of the `<textarea>`
+Another technique is to use the vertical scroll height of the `<textarea>`, this works even without word wrapping but can be a bit janky due to the layout shifts caused by the height changes (this happens on Chrome but not on Safari from my testing)
 
 ```ts
 function autoResizeTextarea(textarea: HTMLTextAreaElement) {
@@ -65,13 +68,13 @@ function autoResizeTextarea(textarea: HTMLTextAreaElement) {
 }
 ```
 
-That has the following effect, this works even without word wrapping but can be a bit janky due to the layout shifts caused by the height changes
-
 import { TextareaAutoresizeDemo2 } from '@/components/preact/codemirror'
 
 <figure class="padded">
     <TextareaAutoresizeDemo2 client:only />
 </figure>
+
+#### HTML Datalists
 
 If you only need a single input field with autocomplete, let's always remember that HTML has the native `<datalist>` element that can be used to provide suggestions for an `<input>` or `<textarea>` element.
 
@@ -95,13 +98,11 @@ Now let's talk about the main libraries available
 
 A notable mention is [**CodeJar**](https://medv.io/codejar/), a lightweight editor library that [uses "the overlay trick"](#the-overlay-trick) to support syntax highlighting and uses a `contenteditable` element for input and reimplements editor behavior from scratch. It is very easy to set up and you can also provide syntax highlighting through Prism.js, Highlight.js, or a custom user-provided function.
 
-Most text editor libraries grew organically over time, adding features and complexity in an ad-hoc manner. CodeMirror 6 is the latest iteration of the CodeMirror project, a complete rewrite that was designed from scratch with a modular architecture in mind that separates state management from view rendering.
+Most text editor libraries grew organically over time, adding features and complexity in an ad-hoc manner.
 
 ## Codemirror 6
 
-Why I am writing this post? Many of the applications I worked on recently could benefit from **AI code generation features**. I think that _the chat interface model isn't always ideal_ and I prefer having the LLMs update a document by regenerating it completely or by using tool-based editing.
-
-In both cases, users **need to see the diff** between the old and the new version of the document and be able to accept or reject each change. For my use cases, this is currently the most intuitive and precise way to handle external changes while editing both code or prose.
+CodeMirror 6 is the latest iteration of the CodeMirror project, a complete rewrite that was designed from scratch with a modular architecture in mind that separates state management from view rendering.
 
 CodeMirror already provides an extension called [codemirror/merge](https://github.com/codemirror/merge) that offers side-by-side and unified diff views, making it well-suited for this use case. In this article, we'll explore the basics of _CodeMirror 6_ and how to leverage the merge extension to build a simple editor with a review mode for managing changes after an external update.
 
@@ -109,9 +110,11 @@ The only problem I have with CodeMirror 6 is that the documentation is very spar
 
 ![Documentation quadrants](https://docs.divio.com/assets/images/overview-8b21327c9a55ca08c6712f26bda2113c.png)
 
-In terms of the [four documentation quadrants](https://diataxis.fr/), CodeMirror 6 has a lot of "how-to" and "reference" material and a [system guide](https://codemirror.net/docs/guide/) that explains the core concepts, but it lacks good tutorials that incrementally introduce concepts and features in a practical way. This was one of the hardest things for me while learning it, and I hope this article can be a good starting point for anyone interested in using CodeMirror 6 for their projects.
+In terms of the [four documentation quadrants](https://diataxis.fr/), CodeMirror 6 has a lot of _how-to_ and _reference_ material and an extensive [system guide](https://codemirror.net/docs/guide/) that explains the core concepts, but it lacks good tutorials that incrementally introduce concepts and features in a practical way. This was one of the hardest things for me while learning it, and I hope this article can be a good starting point for anyone interested in using CodeMirror 6 for their projects.
 
 By the way, I also tried to ask Claude and some other models to write this extension for me, but they all failed to produce a working implementation. I think the functional architecture of CodeMirror 6 is not very intuitive for them, and being a niche library with sparse documentation doesn't help either.
+
+Technically I haven't tried more advanced techniques like giving models the complete source code as a reference before writing the extension, but I still wanted learn the library I try so I didn't do that.
 
 ### Basic setup
 
@@ -128,7 +131,7 @@ const view = new EditorView({
 })
 ```
 
-This code is correct but this is already lying a bit about the architecture, but we'll get to this later. Differently from other editors, accessing and modifying the content of the editor is more involved than just reading or writing a `.value` property.
+This code is correct but this is already lying a bit about the real architecture of CodeMirror, but we'll get to this later. Differently from other editors, accessing and modifying the content of the editor is more involved than just reading or writing a `.value` property.
 
 To get the current content of the editor, you can use `view.state.doc.toString()`. To modify it programmatically, you need to dispatch a **transaction** with all the changes you want to apply. Here a change is a range of text to replace and the new text to insert in its place.
 
