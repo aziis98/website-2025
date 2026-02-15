@@ -6,17 +6,17 @@ tags:
 publish_date: 2026/02/14
 ---
 
-Recently, I've been working on more and more complex web applications and one common component that many of these applications would benefit from is a nice text/code editor. To not overcomplicate my life, for now I've always just used simple (and sad) textareas without any advanced features. But I think I've now reached the point where I want to have better code editing features like syntax highlighting, multiple cursors and more.
+Recently, I've been working on more and more complex web applications and one common component that many of these would benefit from is a nice text/code editor. To not overcomplicate my life, for now I've always just used simple (and sad) textareas without any advanced features. But I think I've now reached the point that I want to have better code editing features like syntax highlighting, multiple cursors and more.
 
-From what I've seen most LLMs today _just suggest to use Monaco_, which is a great editor, but is also very heavy and not easily customizable. I'd like to have more control over the editor itself and I'd also like to extend the editor in various ways, for example by adding custom decorations or other features that are not easily achievable with Monaco and this is why I decided to give [CodeMirror 6](https://codemirror.net/) a try, which is a more modular and customizable editor library.
+From what I've seen, most LLMs today _just suggest to use Monaco_, which is a great editor, but is also very heavy and not easily customizable (from my experiments). I'd like to have more control over the editor itself to extend it in various ways, for example by adding custom decorations or other features that are not easily achievable with Monaco and this is why I decided to give [CodeMirror 6](https://codemirror.net/) a try, which is a more modular and customizable editor library.
 
 Nowadays, with the rise of LLMs, I think that having a good code editor with a review mode that allows users to easily accept or reject changes is becoming increasingly important as the _chat interface model isn't always ideal_ and I prefer having the LLMs update a document directly by regenerating it completely or with tool-based editing.
 
-In both cases, users **need to see the changes** between the old and the new version of the document and be able to accept/reject each one. For my use cases, this is currently the most intuitive and precise way to handle external changes while editing both code or prose.
+In both cases, users **need to see the changes** between the old and the new version of the document and be able to accept/reject each one. For my use cases, this is currently the most intuitive and precise way to handle external changes while editing both code or prose. So in this article, we will explore how to build a simple **code review extension** for CodeMirror 6 using the [unified merge extension](https://github.com/codemirror/merge).
 
 ## Various text editor options
 
-You can skip this section if you want but just for the sake of completeness, let's quickly go through some of the options available for text editors on the web. This is not an exhaustive list, but it should give you an idea of the landscape and the trade-offs between different options.
+You can skip this section if you want but just for the sake of completeness let's quickly go through some of the options available for text editors on the web. This is not an exhaustive list, but it should give you an idea of the landscape and the trade-offs between different options.
 
 ### Just a `textarea`&trade;
 
