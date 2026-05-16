@@ -92,7 +92,11 @@ const { title, description, thumbnail } = Astro.props
             />
 
             <label class="mobile-menu" for="mobile-sidebar-menu">
-                <Icon class="mobile-sidebar-menu-close" name="octicon:sidebar-collapse-16" size={24} />
+                <Icon
+                    class="mobile-sidebar-menu-close"
+                    name="octicon:sidebar-collapse-16"
+                    size={24}
+                />
                 <Icon class="mobile-sidebar-menu-open" name="octicon:sidebar-expand-16" size={24} />
             </label>
 
@@ -145,7 +149,9 @@ const { title, description, thumbnail } = Astro.props
                 </div>
             </nav>
 
-            <slot />
+            <div class="content">
+                <slot />
+            </div>
         </main>
     </body>
 </html>

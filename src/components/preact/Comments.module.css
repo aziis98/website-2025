@@ -1,0 +1,157 @@
+.comments {
+    padding-top: 2rem;
+}
+
+.header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.header p {
+    max-width: none;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.externalLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    vertical-align: baseline;
+}
+
+.externalLink :global(svg) {
+    flex: none;
+}
+
+.error {
+    color: #b42318;
+}
+
+.list {
+    display: grid;
+    gap: 1rem;
+}
+
+.comment {
+    padding: 0.95rem 1rem;
+    border: 1px solid #d7d7d7;
+    border-radius: 0.25rem;
+    background: #fff;
+}
+
+.meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.9em;
+}
+
+.avatarLink {
+    display: grid;
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 0.2rem;
+    border: 1px solid #d0d0d0;
+}
+
+.author {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.author a {
+    color: inherit;
+    font-weight: 600;
+    background: none;
+    padding: 0;
+}
+
+.date {
+    color: #777;
+    font-size: 0.85em;
+}
+
+.date {
+    margin-left: auto;
+    white-space: nowrap;
+    background: none;
+    padding: 0;
+}
+
+.body {
+    display: grid;
+    gap: 0.75rem;
+    font-size: 0.94em;
+    line-height: 1.6;
+}
+
+.body > :first-child {
+    margin-top: 0;
+}
+
+.body > :last-child {
+    margin-bottom: 0;
+}
+
+.replies {
+    display: grid;
+    gap: 0; /* no vertical gaps between parent and replies */
+    margin-top: 0; /* attach directly under parent */
+    padding-left: 1rem;
+    padding-right: 0.25rem;
+}
+
+.commentGroup {
+    display: block;
+}
+
+/* Replies: square corners except the right side rounded; last reply gets full radius */
+.replies .comment {
+    border-radius: 0; /* remove all rounding for replies */
+    border-top: none; /* remove top border for replies */
+}
+
+.replies > :last-child .comment {
+    border-radius: 0 0 0.25rem 0.25rem;
+}
+
+@media screen and (width <= 600px) {
+    .header {
+        flex-direction: column;
+    }
+
+    .discussionId {
+        text-align: left;
+    }
+
+    .meta {
+        align-items: start;
+        flex-wrap: wrap;
+    }
+
+    .date {
+        margin-left: 0;
+    }
+}
+
+@media screen and (width <= 960px) {
+    .list {
+        padding-right: 1rem;
+    }
+}
+
+@media screen and (width <= 600px) {
+    .list {
+        padding-right: 0;
+    }
+}

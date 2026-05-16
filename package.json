@@ -24,6 +24,7 @@
         "@iconify-json/octicon": "^1.2.19",
         "@iconify-json/simple-icons": "^1.2.59",
         "@iconify-json/vscode-icons": "^1.2.36",
+        "@iconify/react": "^6.0.2",
         "@types/three": "^0.181.0",
         "astro": "6.3.3",
         "astro-icon": "^1.1.5",

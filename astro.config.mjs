@@ -35,7 +35,9 @@ export default defineConfig({
         allowedHosts: true,
     },
     integrations: [
-        preact(),
+        preact({
+            compat: true,
+        }),
         icon(),
         mdx({
             remarkPlugins: [remarkMath],

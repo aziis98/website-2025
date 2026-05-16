@@ -564,6 +564,8 @@
 
             > .content {
                 grid-column: 2 / 3;
+                display: flex;
+                flex-direction: column;
                 padding: calc(var(--main-gap-v) - 0.125rem) 0 33vh;
                 min-width: 0;
 

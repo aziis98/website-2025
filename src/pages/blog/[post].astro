@@ -1,4 +1,5 @@
 ---
+import { Comments } from '@/components/preact/Comments'
 import Base from '@/layout/Base.astro'
 
 import type { GetStaticPaths } from 'astro'
@@ -44,4 +45,6 @@ const { Content } = await render(post)
 
         <Content />
     </div>
+
+    {post.data.discussion_url && <Comments client:only discussionUrl={post.data.discussion_url} />}
 </Base>

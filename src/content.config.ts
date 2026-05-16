@@ -14,6 +14,8 @@ const blog = defineCollection({
         image: z.string().optional(),
         draft: z.boolean().default(false),
 
+        discussion_url: z.string().url().optional(),
+
         thumbnail: z.string().optional(),
         thumbnail_alt: z.string().optional(),
         thumbnail_url: z.string().optional(),
