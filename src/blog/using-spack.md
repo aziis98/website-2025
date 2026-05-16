@@ -4,6 +4,7 @@ description: Review of using Spack for managing a C project I'm working on for a
     project
 tags: ['spack', 'c', 'mpi', 'cluster', 'lang-en']
 publish_date: 2025/02/11
+discussion_url: https://github.com/aziis98/website-2025/discussions/5
 ---
 
 ## Introduction

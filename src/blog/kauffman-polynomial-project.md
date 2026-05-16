@@ -4,6 +4,7 @@ description: Report in web form for the Computational Laboratory university proj
     the Kauffman polynomial
 tags: ['kauffman', 'python', 'knot-theory', 'lang-en']
 publish_date: 2025/06/03
+discussion_url: https://github.com/aziis98/website-2025/discussions/4
 ---
 
 This blog article was converted from the following Typst report, and the
@@ -905,10 +906,10 @@ optimizations.
     optimizations lattice: the number of total recursive calls for the function
     `kauffman_polynomial` is in blue and time of execution in green.
 
-                  <figure>
-                  <img src="/blog/kauffman-polynomial/optimizations-lattice-calls.jpg" alt="Optimizations Lattice Calls">
-                  <figcaption>Optimizations Lattice Calls</figcaption>
-                  </figure>
+                    <figure>
+                    <img src="/blog/kauffman-polynomial/optimizations-lattice-calls.jpg" alt="Optimizations Lattice Calls">
+                    <figcaption>Optimizations Lattice Calls</figcaption>
+                    </figure>
 
     As we can see the most important optimization is the `to_minimal` one that
     by itself reduces the total number of calls from 29K to 8K but relabelling

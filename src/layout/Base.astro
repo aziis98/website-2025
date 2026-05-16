@@ -15,9 +15,10 @@ type Props = {
     title?: string | string[]
     description?: string
     thumbnail?: string
+    wrapSlotContent?: boolean
 }
 
-const { title, description, thumbnail } = Astro.props
+const { title, description, thumbnail, wrapSlotContent = false } = Astro.props
 ---
 
 <!doctype html>
@@ -149,9 +150,15 @@ const { title, description, thumbnail } = Astro.props
                 </div>
             </nav>
 
-            <div class="content">
-                <slot />
-            </div>
+            {
+                wrapSlotContent ? (
+                    <div class="content">
+                        <slot />
+                    </div>
+                ) : (
+                    <slot />
+                )
+            }
         </main>
     </body>
 </html>

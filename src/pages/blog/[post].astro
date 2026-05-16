@@ -23,9 +23,10 @@ const { Content } = await render(post)
     title={['Blog', post.data.title]}
     description={post.data.description}
     thumbnail={post.data.thumbnail}
+    wrapSlotContent={true}
 >
     <h1 slot="header-title">{post.data.title}</h1>
-    <div class="content text">
+    <div class="text">
         {
             post.data.thumbnail && post.data.thumbnail_visible && (
                 <a href={post.data.thumbnail_url}>
