@@ -107,6 +107,16 @@ export async function getProjectsData() {
         technologies?: string[]
     }[] = [
         {
+            html_url: 'https://github.com/aziis98/pdfatlas',
+            full_name: 'aziis98/pdfatlas',
+            description:
+                'Personal gtk4/adwaita pdf viewer based on mupdf. Features: minimap, fuzzy full text search, portals, arxiv integration for copy-latex, tabs',
+            topics: [],
+            stargazers_count: 6,
+            forks_count: 0,
+            technologies: ['Python', 'SQLite'],
+        },
+        {
             html_url: 'https://github.com/gdgpisa/devfest-2025',
             full_name: 'gdgpisa/devfest-2025',
             description: 'New website for GDG DevFest 2025 made from scratch in Astro',
@@ -114,6 +124,26 @@ export async function getProjectsData() {
             stargazers_count: 4,
             forks_count: 1,
             technologies: ['Astro'],
+        },
+        {
+            html_url: 'https://github.com/aziis98/gdgpisa-secret26',
+            full_name: 'aziis98/gdgpisa-secret26',
+            description:
+                'A small secret CTF for DevFest Pisa 2026: microgpt llm runs on python (pyodide) on a shell (vfs+common unix commands) on js',
+            topics: [
+                'cft',
+                'devfest',
+                'llm',
+                'metacircular',
+                'microgpt',
+                'pyodide',
+                'python',
+                'shell',
+                'xterm-js',
+            ],
+            stargazers_count: 3,
+            forks_count: 0,
+            technologies: ['JavaScript', 'Python'],
         },
         {
             html_url: 'https://github.com/aziis98/kauffman-polynomial',
@@ -190,6 +220,12 @@ export async function getProjectsData() {
         description: string
         technologies: string[]
     }[] = [
+        {
+            html_url: 'https://github.com/aziis98/statuspage',
+            full_name: 'aziis98/statuspage',
+            description: 'A simple status page written in golang and preact',
+            technologies: ['Go', 'Preact'],
+        },
         {
             html_url: 'https://git.phc.dm.unipi.it/phc/website',
             full_name: 'phc/website',
