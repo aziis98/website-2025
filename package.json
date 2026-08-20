@@ -9,9 +9,9 @@
         "astro": "astro"
     },
     "dependencies": {
-        "@astrojs/check": "0.9.9",
-        "@astrojs/mdx": "7.0.3",
-        "@astrojs/preact": "6.0.1",
+        "@astrojs/check": "0.9.10",
+        "@astrojs/mdx": "7.0.7",
+        "@astrojs/preact": "6.0.4",
         "@astrojs/rss": "4.0.19",
         "@codemirror/merge": "^6.11.2",
         "@codemirror/state": "^6.5.4",
@@ -27,7 +27,7 @@
         "@iconify-json/vscode-icons": "^1.2.36",
         "@iconify/react": "^6.0.2",
         "@types/three": "^0.181.0",
-        "astro": "7.1.1",
+        "astro": "7.2.4",
         "astro-icon": "^1.1.5",
         "codemirror": "^6.0.2",
         "katex": "^0.16.25",
@@ -37,7 +37,7 @@
         "typescript": "^5.9.3"
     },
     "devDependencies": {
-        "@astrojs/markdown-remark": "7.2.1",
+        "@astrojs/markdown-remark": "7.2.4",
         "prettier": "^3.6.2",
         "prettier-plugin-astro": "^0.14.1",
         "rehype-external-links": "^3.0.0"
