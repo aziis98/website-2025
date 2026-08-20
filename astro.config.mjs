@@ -7,26 +7,30 @@ import icon from 'astro-icon'
 import mdx from '@astrojs/mdx'
 import remarkMath from 'remark-math'
 
+import { unified } from '@astrojs/markdown-remark'
+
 import rehypeExternalLinks from 'rehype-external-links'
 
 // https://astro.build/config
 export default defineConfig({
     vite: {
         build: {
-            target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
+            target: ['edge88', 'firefox78', 'chrome87', 'safari14'],
         },
     },
 
     devToolbar: { enabled: false },
     markdown: {
-        remarkPlugins: [remarkMath],
-        rehypePlugins: [[rehypeExternalLinks, { target: '_blank', rel: ['noopener'] }]],
         shikiConfig: {
             themes: {
                 light: 'github-light',
                 dark: 'github-dark',
             },
         },
+        processor: unified({
+            remarkPlugins: [remarkMath],
+            rehypePlugins: [[rehypeExternalLinks, { target: '_blank', rel: ['noopener'] }]],
+        }),
     },
     prefetch: {
         prefetchAll: true,
@@ -40,14 +44,16 @@ export default defineConfig({
         }),
         icon(),
         mdx({
-            remarkPlugins: [remarkMath],
-            rehypePlugins: [[rehypeExternalLinks, { target: '_blank', rel: ['noopener'] }]],
             shikiConfig: {
                 themes: {
                     light: 'github-light',
                     dark: 'github-dark',
                 },
             },
+            processor: unified({
+                remarkPlugins: [remarkMath],
+                rehypePlugins: [[rehypeExternalLinks, { target: '_blank', rel: ['noopener'] }]],
+            }),
         }),
     ],
 })
